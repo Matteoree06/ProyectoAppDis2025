@@ -131,13 +131,13 @@ public class Login extends javax.swing.JFrame {
         boolean authenticated = loginService.authenticate(username, password);
 
         if (authenticated) {
-            JOptionPane.showMessageDialog(this, "Inicio de sesión exitoso");
+            JOptionPane.showMessageDialog(this, "Login Success");
             Menu menu = new Menu();
             menu.setVisible(true);
             this.dispose();
             
         } else {
-            JOptionPane.showMessageDialog(this, "Usuario o contraseña incorrectos");
+            JOptionPane.showMessageDialog(this, "Usuario o contraseña incorrectos, por favor verifiquelo!");
         }
     }//GEN-LAST:event_Login_BTNActionPerformed
 

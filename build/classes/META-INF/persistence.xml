@@ -3,6 +3,7 @@
   <persistence-unit name="ProyectoAppDistiPU" transaction-type="RESOURCE_LOCAL">
     <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
     <class>Capa_persistencia.Usuario</class>
+    <class>Capa_persistencia.Empleado</class>
     <properties>
       <property name="javax.persistence.jdbc.url" value="jdbc:oracle:thin:@localhost:1521:XE"/>
       <property name="javax.persistence.jdbc.user" value="db_mateo"/>
