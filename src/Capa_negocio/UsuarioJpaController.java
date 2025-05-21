@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package DAO;
+package Capa_negocio;
 
+import Capa_negocio.exceptions.NonexistentEntityException;
+import Capa_negocio.exceptions.PreexistingEntityException;
 import Capa_persistencia.Usuario;
-import DAO.exceptions.NonexistentEntityException;
-import DAO.exceptions.PreexistingEntityException;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.EntityManager;
