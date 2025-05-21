@@ -5,8 +5,8 @@
  */
 package Capa_presentacion;
 
+import Capa_negocio.UsuarioJpaController;
 import Capa_persistencia.Usuario;
-import DAO.UsuarioJpaController;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.EntityManagerFactory;
@@ -64,12 +64,6 @@ public class CreateAccount extends javax.swing.JFrame {
 
         jLabel4.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
         jLabel4.setText("Confirm Password");
-
-        Username.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                UsernameActionPerformed(evt);
-            }
-        });
 
         SingUP_BTN.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
         SingUP_BTN.setText("Signup");
@@ -134,37 +128,38 @@ public class CreateAccount extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void UsernameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_UsernameActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_UsernameActionPerformed
-
     private void SingUP_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SingUP_BTNActionPerformed
         // TODO add your handling code here:
         String username = Username.getText();
         String password = Password.getText();
         String cpassword = CPassword.getText();
 
-        if(password.equals(cpassword)){
-        Usuario usuario = new Usuario();
-            if (usuario != null) {
-                usuario.setUsuario(username);
-                usuario.setPassword(password);
-                try {
-                    UsuarioJpaController.create(usuario);
-                    JOptionPane.showMessageDialog(this, "Usuario Creado con Exito");
-                } catch (Exception ex) {
-                    Logger.getLogger(CreateAccount.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "Digite un usuario, por favor");
-            }
-        } else{
-            JOptionPane.showMessageDialog(this, "Las contraseñas no coinciden, intentelo de nuevo");
+        if (username.isEmpty() || password.isEmpty() || cpassword.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
         }
 
-        Login login = new Login();
-        login.setVisible(true);
-        this.dispose();
+        if (!password.equals(cpassword)) {
+            JOptionPane.showMessageDialog(this, "Las contraseñas no coinciden. Inténtelo de nuevo.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        Usuario usuario = new Usuario();
+        usuario.setUsuario(username);
+        usuario.setPassword(password);
+
+        try {
+            UsuarioJpaController.create(usuario);
+            JOptionPane.showMessageDialog(this, "Usuario creado con éxito", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+
+            Login login = new Login();
+            login.setVisible(true);
+            this.dispose();
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error al crear el usuario: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            Logger.getLogger(CreateAccount.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_SingUP_BTNActionPerformed
 
     /**
