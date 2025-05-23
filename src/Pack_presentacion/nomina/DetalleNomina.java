@@ -9,12 +9,12 @@ package Pack_presentacion.nomina;
  *
  * @author HP
  */
-public class Detalle_nomina extends javax.swing.JFrame {
+public class DetalleNomina extends javax.swing.JFrame {
 
     /**
      * Creates new form Detalle_Nomina
      */
-    public Detalle_nomina() {
+    public DetalleNomina() {
         initComponents();
     }
 
@@ -35,6 +35,7 @@ public class Detalle_nomina extends javax.swing.JFrame {
         Buscar_BTN = new javax.swing.JButton();
         Eliminar_BTN = new javax.swing.JButton();
         Guardar_BTN = new javax.swing.JButton();
+        Modificar_BTN = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -94,6 +95,14 @@ public class Detalle_nomina extends javax.swing.JFrame {
             }
         });
 
+        Modificar_BTN.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        Modificar_BTN.setText("Modificar");
+        Modificar_BTN.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Modificar_BTNActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -106,16 +115,20 @@ public class Detalle_nomina extends javax.swing.JFrame {
                 .addGap(22, 22, 22)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(101, 101, 101)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 800, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(24, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(36, 36, 36)
                         .addComponent(Agregar_BTN)
-                        .addGap(86, 86, 86)
+                        .addGap(81, 81, 81)
                         .addComponent(Buscar_BTN)
-                        .addGap(73, 73, 73)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(Modificar_BTN)
+                        .addGap(51, 51, 51)
                         .addComponent(Eliminar_BTN)
-                        .addGap(71, 71, 71)
-                        .addComponent(Guardar_BTN))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 800, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(24, Short.MAX_VALUE))
+                        .addGap(81, 81, 81)
+                        .addComponent(Guardar_BTN)
+                        .addGap(60, 60, 60))))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -125,14 +138,15 @@ public class Detalle_nomina extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(38, 38, 38)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 106, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addContainerGap(106, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(Agregar_BTN)
                             .addComponent(Buscar_BTN)
                             .addComponent(Eliminar_BTN)
-                            .addComponent(Guardar_BTN))
+                            .addComponent(Guardar_BTN)
+                            .addComponent(Modificar_BTN))
                         .addGap(49, 49, 49))))
         );
 
@@ -166,6 +180,10 @@ public class Detalle_nomina extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_Guardar_BTNActionPerformed
 
+    private void Modificar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Modificar_BTNActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Modificar_BTNActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -183,21 +201,23 @@ public class Detalle_nomina extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Detalle_nomina.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(DetalleNomina.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Detalle_nomina.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(DetalleNomina.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Detalle_nomina.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(DetalleNomina.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Detalle_nomina.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(DetalleNomina.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
+        //</editor-fold>
         //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Detalle_nomina().setVisible(true);
+                new DetalleNomina().setVisible(true);
             }
         });
     }
@@ -207,6 +227,7 @@ public class Detalle_nomina extends javax.swing.JFrame {
     private javax.swing.JButton Buscar_BTN;
     private javax.swing.JButton Eliminar_BTN;
     private javax.swing.JButton Guardar_BTN;
+    private javax.swing.JButton Modificar_BTN;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;

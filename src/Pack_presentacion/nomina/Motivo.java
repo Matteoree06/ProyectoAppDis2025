@@ -4,6 +4,17 @@
  * and open the template in the editor.
  */
 package Pack_presentacion.nomina;
+import Pack_negocio.MotivoIngresoEgresoJpaController;
+import Pack_negocio.exceptions.NonexistentEntityException;
+import Pack_negocio.exceptions.PreexistingEntityException;
+import Pack_persistencia.MotivoIngresoEgreso;
+import Pack_presentacion.Menu;
+import java.util.List;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import javax.swing.JOptionPane;
+import javax.swing.WindowConstants;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -11,11 +22,28 @@ package Pack_presentacion.nomina;
  */
 public class Motivo extends javax.swing.JFrame {
 
+    private MotivoIngresoEgresoJpaController MotivoIngresoEgresoJpaController;
+    private EntityManagerFactory emf;
+
     /**
      * Creates new form Motivo
      */
     public Motivo() {
         initComponents();
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        emf = Persistence.createEntityManagerFactory("ProyectoAppDistiPU");
+        MotivoIngresoEgresoJpaController = new MotivoIngresoEgresoJpaController(emf);
+        loadMotivoIngresoEgresoJpaController();
+    }
+
+    private void loadMotivoIngresoEgresoJpaController() {
+        List<MotivoIngresoEgreso> motivos = MotivoIngresoEgresoJpaController.findMotivoIngresoEgresoEntities();
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        model.setRowCount(0);
+        for (MotivoIngresoEgreso motivo : motivos) {
+            model.addRow(new Object[]{motivo.getCodigo(), motivo.getNombre(), motivo.getTipo()});
+        }
     }
 
     /**
@@ -32,9 +60,10 @@ public class Motivo extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         Agregar_BTN = new javax.swing.JButton();
-        Buscar_BTN = new javax.swing.JButton();
+        Modificar_BTN = new javax.swing.JButton();
         Eliminar_BTN = new javax.swing.JButton();
-        Guardar_BTN = new javax.swing.JButton();
+        Regresar_BTN = new javax.swing.JButton();
+        Buscar_BTN = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -43,17 +72,17 @@ public class Motivo extends javax.swing.JFrame {
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null}
+                {null, null, null},
+                {null, null, null},
+                {null, null, null},
+                {null, null, null}
             },
             new String [] {
-                "Código", "Nombre"
+                "Código", "Nombre", "Tipo"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, true
+                false, true, true
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -70,11 +99,11 @@ public class Motivo extends javax.swing.JFrame {
             }
         });
 
-        Buscar_BTN.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        Buscar_BTN.setText("Editar");
-        Buscar_BTN.addActionListener(new java.awt.event.ActionListener() {
+        Modificar_BTN.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        Modificar_BTN.setText("Modificar");
+        Modificar_BTN.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Buscar_BTNActionPerformed(evt);
+                Modificar_BTNActionPerformed(evt);
             }
         });
 
@@ -86,11 +115,19 @@ public class Motivo extends javax.swing.JFrame {
             }
         });
 
-        Guardar_BTN.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        Guardar_BTN.setText("Guardar");
-        Guardar_BTN.addActionListener(new java.awt.event.ActionListener() {
+        Regresar_BTN.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        Regresar_BTN.setText("Regresar");
+        Regresar_BTN.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Guardar_BTNActionPerformed(evt);
+                Regresar_BTNActionPerformed(evt);
+            }
+        });
+
+        Buscar_BTN.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        Buscar_BTN.setText("Buscar");
+        Buscar_BTN.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Buscar_BTNActionPerformed(evt);
             }
         });
 
@@ -99,33 +136,41 @@ public class Motivo extends javax.swing.JFrame {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(184, 184, 184)
+                .addContainerGap()
+                .addComponent(Regresar_BTN)
+                .addGap(77, 77, 77)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(Agregar_BTN)
-                        .addGap(107, 107, 107)
-                        .addComponent(Buscar_BTN)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(Buscar_BTN)
+                        .addGap(58, 58, 58)
+                        .addComponent(Modificar_BTN)
+                        .addGap(47, 47, 47)
                         .addComponent(Eliminar_BTN)
-                        .addGap(91, 91, 91)
-                        .addComponent(Guardar_BTN))
+                        .addGap(132, 132, 132))
                     .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jScrollPane1))
-                .addContainerGap(230, Short.MAX_VALUE))
+                .addContainerGap(224, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel1))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(30, 30, 30)
+                        .addComponent(Regresar_BTN)))
                 .addGap(31, 31, 31)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(41, 41, 41)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Agregar_BTN)
-                    .addComponent(Buscar_BTN)
+                    .addComponent(Modificar_BTN)
                     .addComponent(Eliminar_BTN)
-                    .addComponent(Guardar_BTN))
+                    .addComponent(Buscar_BTN))
                 .addContainerGap(80, Short.MAX_VALUE))
         );
 
@@ -145,19 +190,158 @@ public class Motivo extends javax.swing.JFrame {
 
     private void Agregar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Agregar_BTNActionPerformed
         // TODO add your handling code here:
+        try {
+            String nombre = JOptionPane.showInputDialog("Ingrese el nombre:");
+            if (nombre == null || nombre.trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "El nombre no puede estar vacío.");
+                return;
+            }
+
+            String tipo = JOptionPane.showInputDialog("Ingrese el tipo:");
+            if (tipo == null || tipo.trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "El tipo no puede estar vacío.");
+                return;
+            }
+
+            // Crear nuevo objeto SIN asignar código
+            MotivoIngresoEgreso nuevoMotivo = new MotivoIngresoEgreso();
+            nuevoMotivo.setNombre(nombre);
+            nuevoMotivo.setTipo(tipo);
+            nuevoMotivo.setCodigo(null); // <-- importante: dejarlo como null
+
+            // Insertar en BD
+            MotivoIngresoEgresoJpaController.create(nuevoMotivo);
+
+            // Recargar tabla
+            loadMotivoIngresoEgresoJpaController();
+
+            JOptionPane.showMessageDialog(this, "Motivo agregado correctamente.");
+
+        } catch (PreexistingEntityException ex) {
+            JOptionPane.showMessageDialog(this, "El Motivo ya existe.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error al añadir motivo.");
+        }
     }//GEN-LAST:event_Agregar_BTNActionPerformed
 
-    private void Buscar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Buscar_BTNActionPerformed
+    private void Modificar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Modificar_BTNActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_Buscar_BTNActionPerformed
+        try {
+            // Solicita al usuario que ingrese el código del motivo que desea modificar
+            Long codigo = Long.parseLong(JOptionPane.showInputDialog("Ingrese el código:"));
+             // Busca el motivo en la base de datos mediante el JPA Controller usando el código
+            MotivoIngresoEgreso motivo = MotivoIngresoEgresoJpaController.findMotivoIngresoEgreso(codigo);
+
+            if (motivo != null) {
+                // Solicita al usuario el nuevo nombre, mostrando el nombre actual como valor por defecto
+                String nuevoNombre = JOptionPane.showInputDialog("Ingrese el nombre:", motivo.getNombre());
+                // Valida que el nuevo nombre no esté vacío o sea nulo
+                if (nuevoNombre == null || nuevoNombre.trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "El nombre no puede estar vacío.");
+                    return;
+                }
+                
+                 // Solicita al usuario el nuevo tipo, mostrando el tipo actual como valor por defecto
+                String nuevoTipo = JOptionPane.showInputDialog("Ingrese el tipo:", motivo.getTipo());
+                // Valida que el nuevo tipo no esté vacío o sea nulo
+                if (nuevoTipo == null || nuevoTipo.trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "El tipo no puede estar vacío.");
+                    return;
+                }
+
+                // Asigna los nuevos valores al objeto motivo
+                motivo.setNombre(nuevoNombre);
+                motivo.setTipo(nuevoTipo);
+
+                 // Actualiza la entidad en la base de datos usando el método edit del JPA Controller
+                MotivoIngresoEgresoJpaController.edit(motivo);
+                // Recarga la tabla o lista para mostrar los datos actualizados
+                loadMotivoIngresoEgresoJpaController();
+                // Muestra mensaje confirmando que la modificación fue exitosa
+                JOptionPane.showMessageDialog(this, "Motivo modificado correctamente.");
+            } else {
+                // En caso de que no se encuentre el motivo con el código ingresado, muestra mensaje
+                JOptionPane.showMessageDialog(this, "Motivo no encontrado.");
+            }
+
+        } catch (NumberFormatException e) {
+            // Captura el error si el código ingresado no es un número válido
+            JOptionPane.showMessageDialog(this, "Debe ingresar un número válido para el código.");
+        } catch (NonexistentEntityException ex) {
+            // Captura el error si se intenta modificar un motivo que no existe en la base de datos
+            JOptionPane.showMessageDialog(this, "El motivo no existe.");
+        } catch (Exception e) {
+            // Captura cualquier otra excepción no prevista y muestra mensaje de error
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error al modificar motivo.");
+        }
+
+    }//GEN-LAST:event_Modificar_BTNActionPerformed
 
     private void Eliminar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Eliminar_BTNActionPerformed
         // TODO add your handling code here:
+        try {
+            // Solicita al usuario que ingrese el código del motivo a eliminar
+            Long codigo = Long.parseLong(JOptionPane.showInputDialog("Ingrese el código del motivo a eliminar:"));
+            // Llama al método 'destroy' del JPA Controller para eliminar el motivo por su código
+            MotivoIngresoEgresoJpaController.destroy(codigo);
+            // Recarga la tabla o lista para reflejar los cambios en la interfaz
+            loadMotivoIngresoEgresoJpaController();
+            // Muestra mensaje confirmando que el motivo fue eliminado correctamente
+            JOptionPane.showMessageDialog(this, "Motivo eliminado correctamente.");
+        } catch (NumberFormatException e) {
+            // Captura el error cuando el código ingresado no es un número válido
+            JOptionPane.showMessageDialog(this, "Debe ingresar un número válido para el código.");
+        } catch (NonexistentEntityException ex) {
+            // Captura el error cuando no existe un motivo con el código ingresado
+            JOptionPane.showMessageDialog(this, "El motivo no existe.");
+        } catch (Exception e) {
+            // Captura cualquier otro error inesperado y muestra un mensaje de error
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error al eliminar motivo.");
+        }
+
     }//GEN-LAST:event_Eliminar_BTNActionPerformed
 
-    private void Guardar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Guardar_BTNActionPerformed
+    private void Regresar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Regresar_BTNActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_Guardar_BTNActionPerformed
+        Menu menu = new Menu();
+        menu.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_Regresar_BTNActionPerformed
+
+    private void Buscar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Buscar_BTNActionPerformed
+        // TODO add your handling code here:
+        try {
+            // Solicita al usuario que ingrese el código del motivo a buscar
+            Long codigo = Long.parseLong(JOptionPane.showInputDialog("Ingrese el código del motivo:"));
+            // Busca en la base de datos el motivo con el código ingresado
+            MotivoIngresoEgreso motivo = MotivoIngresoEgresoJpaController.findMotivoIngresoEgreso(codigo);
+
+             // Verifica si se encontró el motivo
+            if (motivo != null) {
+                 // Construye un mensaje con la información encontrada
+                String mensaje = "Motivo encontrado:\n"
+                        + "Código: " + motivo.getCodigo() + "\n"
+                        + "Nombre: " + motivo.getNombre() + "\n"
+                        + "Tipo: " + motivo.getTipo();
+                // Muestra la información al usuario
+                JOptionPane.showMessageDialog(this, mensaje);
+            } else {
+                JOptionPane.showMessageDialog(this, "Motivo no encontrado.");
+            }
+
+        } catch (NumberFormatException e) {
+            // Captura el error si el código ingresado no es un número válido
+            JOptionPane.showMessageDialog(this, "Debe ingresar un número válido para el código.");
+        } catch (Exception e) {
+             // Captura cualquier otro error y muestra un mensaje
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error al buscar motivo.");
+        }
+
+    }//GEN-LAST:event_Buscar_BTNActionPerformed
 
     /**
      * @param args the command line arguments
@@ -198,7 +382,8 @@ public class Motivo extends javax.swing.JFrame {
     private javax.swing.JButton Agregar_BTN;
     private javax.swing.JButton Buscar_BTN;
     private javax.swing.JButton Eliminar_BTN;
-    private javax.swing.JButton Guardar_BTN;
+    private javax.swing.JButton Modificar_BTN;
+    private javax.swing.JButton Regresar_BTN;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
