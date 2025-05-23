@@ -5,7 +5,7 @@
  */
 package Pack_presentacion;
 
-import Pack_presentacion.nomina.Detalle_nomina;
+import Pack_presentacion.nomina.DetalleNomina;
 import Pack_presentacion.nomina.Reporte;
 import Pack_presentacion.nomina.Empleado;
 import Pack_presentacion.nomina.Motivo;
@@ -144,7 +144,7 @@ public class Nomina extends javax.swing.JFrame {
 
     private void Detalle_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Detalle_BTNActionPerformed
         // TODO add your handling code here:
-        Detalle_nomina detalle = new Detalle_nomina();
+        DetalleNomina detalle = new DetalleNomina();
         detalle.setVisible(true);
     }//GEN-LAST:event_Detalle_BTNActionPerformed
 
