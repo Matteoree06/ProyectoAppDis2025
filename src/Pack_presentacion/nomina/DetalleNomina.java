@@ -34,7 +34,6 @@ public class DetalleNomina extends javax.swing.JFrame {
         Agregar_BTN = new javax.swing.JButton();
         Buscar_BTN = new javax.swing.JButton();
         Eliminar_BTN = new javax.swing.JButton();
-        Guardar_BTN = new javax.swing.JButton();
         Modificar_BTN = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -87,14 +86,6 @@ public class DetalleNomina extends javax.swing.JFrame {
             }
         });
 
-        Guardar_BTN.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        Guardar_BTN.setText("Guardar");
-        Guardar_BTN.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Guardar_BTNActionPerformed(evt);
-            }
-        });
-
         Modificar_BTN.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         Modificar_BTN.setText("Modificar");
         Modificar_BTN.addActionListener(new java.awt.event.ActionListener() {
@@ -124,11 +115,9 @@ public class DetalleNomina extends javax.swing.JFrame {
                         .addComponent(Buscar_BTN)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(Modificar_BTN)
-                        .addGap(51, 51, 51)
+                        .addGap(105, 105, 105)
                         .addComponent(Eliminar_BTN)
-                        .addGap(81, 81, 81)
-                        .addComponent(Guardar_BTN)
-                        .addGap(60, 60, 60))))
+                        .addGap(85, 85, 85))))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -145,7 +134,6 @@ public class DetalleNomina extends javax.swing.JFrame {
                             .addComponent(Agregar_BTN)
                             .addComponent(Buscar_BTN)
                             .addComponent(Eliminar_BTN)
-                            .addComponent(Guardar_BTN)
                             .addComponent(Modificar_BTN))
                         .addGap(49, 49, 49))))
         );
@@ -175,10 +163,6 @@ public class DetalleNomina extends javax.swing.JFrame {
     private void Eliminar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Eliminar_BTNActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_Eliminar_BTNActionPerformed
-
-    private void Guardar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Guardar_BTNActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_Guardar_BTNActionPerformed
 
     private void Modificar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Modificar_BTNActionPerformed
         // TODO add your handling code here:
@@ -226,7 +210,6 @@ public class DetalleNomina extends javax.swing.JFrame {
     private javax.swing.JButton Agregar_BTN;
     private javax.swing.JButton Buscar_BTN;
     private javax.swing.JButton Eliminar_BTN;
-    private javax.swing.JButton Guardar_BTN;
     private javax.swing.JButton Modificar_BTN;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;

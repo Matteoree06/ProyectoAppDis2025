@@ -7,7 +7,7 @@ package Pack_presentacion;
 
 import Pack_presentacion.nomina.DetalleNomina;
 import Pack_presentacion.nomina.Reporte;
-import Pack_presentacion.nomina.Empleado;
+import Pack_presentacion.nomina.EmpleadoF;
 import Pack_presentacion.nomina.Motivo;
 import Pack_presentacion.nomina.Valores_pagar;
 import javax.swing.WindowConstants;
@@ -138,7 +138,7 @@ public class Nomina extends javax.swing.JFrame {
 
     private void Empleado_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Empleado_BTNActionPerformed
         // TODO add your handling code here:
-        Empleado empleado = new Empleado();
+        EmpleadoF empleado = new EmpleadoF();
         empleado.setVisible(true);
     }//GEN-LAST:event_Empleado_BTNActionPerformed
 

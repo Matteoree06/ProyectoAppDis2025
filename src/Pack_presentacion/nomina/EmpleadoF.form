@@ -59,8 +59,8 @@
                   <Component id="Buscar_BTN" min="-2" max="-2" attributes="0"/>
                   <EmptySpace min="-2" pref="116" max="-2" attributes="0"/>
                   <Component id="Eliminar_BTN" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="76" max="32767" attributes="0"/>
-                  <Component id="Guardar_BTN" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace pref="68" max="32767" attributes="0"/>
+                  <Component id="Modificar_BTN" min="-2" max="-2" attributes="0"/>
                   <EmptySpace min="-2" pref="105" max="-2" attributes="0"/>
               </Group>
           </Group>
@@ -77,7 +77,7 @@
                       <Component id="Agregar_BTN" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="Buscar_BTN" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="Eliminar_BTN" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="Guardar_BTN" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="Modificar_BTN" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace pref="81" max="32767" attributes="0"/>
               </Group>
@@ -171,15 +171,15 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Eliminar_BTNActionPerformed"/>
           </Events>
         </Component>
-        <Component class="javax.swing.JButton" name="Guardar_BTN">
+        <Component class="javax.swing.JButton" name="Modificar_BTN">
           <Properties>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Tahoma" size="18" style="0"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="Guardar"/>
+            <Property name="text" type="java.lang.String" value="Modificar"/>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Guardar_BTNActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Modificar_BTNActionPerformed"/>
           </Events>
         </Component>
       </SubComponents>
