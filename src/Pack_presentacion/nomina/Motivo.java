@@ -34,10 +34,10 @@ public class Motivo extends javax.swing.JFrame {
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         emf = Persistence.createEntityManagerFactory("ProyectoAppDistiPU");
         MotivoIngresoEgresoJpaController = new MotivoIngresoEgresoJpaController(emf);
-        loadMotivoIngresoEgresoJpaController();
+        TablaMotivoIngresoEgreso();
     }
 
-    private void loadMotivoIngresoEgresoJpaController() {
+    private void TablaMotivoIngresoEgreso() {
         List<MotivoIngresoEgreso> motivos = MotivoIngresoEgresoJpaController.findMotivoIngresoEgresoEntities();
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
         model.setRowCount(0);
@@ -213,7 +213,7 @@ public class Motivo extends javax.swing.JFrame {
             MotivoIngresoEgresoJpaController.create(nuevoMotivo);
 
             // Recargar tabla
-            loadMotivoIngresoEgresoJpaController();
+            TablaMotivoIngresoEgreso();
 
             JOptionPane.showMessageDialog(this, "Motivo agregado correctamente.");
 
@@ -257,7 +257,7 @@ public class Motivo extends javax.swing.JFrame {
                  // Actualiza la entidad en la base de datos usando el método edit del JPA Controller
                 MotivoIngresoEgresoJpaController.edit(motivo);
                 // Recarga la tabla o lista para mostrar los datos actualizados
-                loadMotivoIngresoEgresoJpaController();
+                TablaMotivoIngresoEgreso();
                 // Muestra mensaje confirmando que la modificación fue exitosa
                 JOptionPane.showMessageDialog(this, "Motivo modificado correctamente.");
             } else {
@@ -276,7 +276,6 @@ public class Motivo extends javax.swing.JFrame {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error al modificar motivo.");
         }
-
     }//GEN-LAST:event_Modificar_BTNActionPerformed
 
     private void Eliminar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Eliminar_BTNActionPerformed
@@ -287,7 +286,7 @@ public class Motivo extends javax.swing.JFrame {
             // Llama al método 'destroy' del JPA Controller para eliminar el motivo por su código
             MotivoIngresoEgresoJpaController.destroy(codigo);
             // Recarga la tabla o lista para reflejar los cambios en la interfaz
-            loadMotivoIngresoEgresoJpaController();
+            TablaMotivoIngresoEgreso();
             // Muestra mensaje confirmando que el motivo fue eliminado correctamente
             JOptionPane.showMessageDialog(this, "Motivo eliminado correctamente.");
         } catch (NumberFormatException e) {
@@ -301,7 +300,6 @@ public class Motivo extends javax.swing.JFrame {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error al eliminar motivo.");
         }
-
     }//GEN-LAST:event_Eliminar_BTNActionPerformed
 
     private void Regresar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Regresar_BTNActionPerformed
@@ -340,7 +338,6 @@ public class Motivo extends javax.swing.JFrame {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error al buscar motivo.");
         }
-
     }//GEN-LAST:event_Buscar_BTNActionPerformed
 
     /**

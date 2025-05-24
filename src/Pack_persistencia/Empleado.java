@@ -6,6 +6,7 @@
 package Pack_persistencia;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 import javax.persistence.Basic;
@@ -36,10 +37,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Empleado implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Id
     @Basic(optional = false)
     @Column(name = "ID_EMPLEADO")
-    private Long idEmpleado;
+    private BigDecimal idEmpleado;
     @Basic(optional = false)
     @Column(name = "CEDULA")
     private long cedula;
@@ -57,11 +59,11 @@ public class Empleado implements Serializable {
     public Empleado() {
     }
 
-    public Empleado(Long idEmpleado) {
+    public Empleado(BigDecimal idEmpleado) {
         this.idEmpleado = idEmpleado;
     }
 
-    public Empleado(Long idEmpleado, long cedula, String nombre, Date ingreso, BigInteger sueldo) {
+    public Empleado(BigDecimal idEmpleado, long cedula, String nombre, Date ingreso, BigInteger sueldo) {
         this.idEmpleado = idEmpleado;
         this.cedula = cedula;
         this.nombre = nombre;
@@ -69,11 +71,11 @@ public class Empleado implements Serializable {
         this.sueldo = sueldo;
     }
 
-    public Long getIdEmpleado() {
+    public BigDecimal getIdEmpleado() {
         return idEmpleado;
     }
 
-    public void setIdEmpleado(Long idEmpleado) {
+    public void setIdEmpleado(BigDecimal idEmpleado) {
         this.idEmpleado = idEmpleado;
     }
 
@@ -131,7 +133,7 @@ public class Empleado implements Serializable {
 
     @Override
     public String toString() {
-        return "Capa_persistencia.Empleado[ idEmpleado=" + idEmpleado + " ]";
+        return "Pack_persistencia.Empleado[ idEmpleado=" + idEmpleado + " ]";
     }
     
 }
