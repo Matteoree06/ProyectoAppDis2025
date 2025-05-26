@@ -9,16 +9,20 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
+import java.util.List;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -35,6 +39,9 @@ import javax.xml.bind.annotation.XmlRootElement;
     , @NamedQuery(name = "Empleado.findByIngreso", query = "SELECT e FROM Empleado e WHERE e.ingreso = :ingreso")
     , @NamedQuery(name = "Empleado.findBySueldo", query = "SELECT e FROM Empleado e WHERE e.sueldo = :sueldo")})
 public class Empleado implements Serializable {
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "idEmpleado")
+    private List<Cnomina> cnominaList;
 
     private static final long serialVersionUID = 1L;
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
@@ -134,6 +141,14 @@ public class Empleado implements Serializable {
     @Override
     public String toString() {
         return "Pack_persistencia.Empleado[ idEmpleado=" + idEmpleado + " ]";
+    }    
+
+    @XmlTransient
+    public List<Cnomina> getCnominaList() {
+        return cnominaList;
     }
-    
+
+    public void setCnominaList(List<Cnomina> cnominaList) {
+        this.cnominaList = cnominaList;
+    }
 }

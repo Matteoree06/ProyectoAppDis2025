@@ -8,13 +8,14 @@ package Pack_negocio;
 import Pack_negocio.exceptions.IllegalOrphanException;
 import Pack_negocio.exceptions.NonexistentEntityException;
 import Pack_negocio.exceptions.PreexistingEntityException;
+import Pack_persistencia.Cnomina;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import Pack_persistencia.Empleado;
 import Pack_persistencia.Dnomina;
-import Pack_persistencia.MotivoIngresoEgreso;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -24,9 +25,9 @@ import javax.persistence.EntityManagerFactory;
  *
  * @author HP
  */
-public class MotivoIngresoEgresoJpaController implements Serializable {
+public class CnominaJpaController implements Serializable {
 
-    public MotivoIngresoEgresoJpaController(EntityManagerFactory emf) {
+    public CnominaJpaController(EntityManagerFactory emf) {
         this.emf = emf;
     }
     private EntityManagerFactory emf = null;
@@ -35,34 +36,43 @@ public class MotivoIngresoEgresoJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(MotivoIngresoEgreso motivoIngresoEgreso) throws PreexistingEntityException, Exception {
-        if (motivoIngresoEgreso.getDnominaList() == null) {
-            motivoIngresoEgreso.setDnominaList(new ArrayList<Dnomina>());
+    public void create(Cnomina cnomina) throws PreexistingEntityException, Exception {
+        if (cnomina.getDnominaList() == null) {
+            cnomina.setDnominaList(new ArrayList<Dnomina>());
         }
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
+            Empleado idEmpleado = cnomina.getIdEmpleado();
+            if (idEmpleado != null) {
+                idEmpleado = em.getReference(idEmpleado.getClass(), idEmpleado.getIdEmpleado());
+                cnomina.setIdEmpleado(idEmpleado);
+            }
             List<Dnomina> attachedDnominaList = new ArrayList<Dnomina>();
-            for (Dnomina dnominaListDnominaToAttach : motivoIngresoEgreso.getDnominaList()) {
+            for (Dnomina dnominaListDnominaToAttach : cnomina.getDnominaList()) {
                 dnominaListDnominaToAttach = em.getReference(dnominaListDnominaToAttach.getClass(), dnominaListDnominaToAttach.getIdDetalle());
                 attachedDnominaList.add(dnominaListDnominaToAttach);
             }
-            motivoIngresoEgreso.setDnominaList(attachedDnominaList);
-            em.persist(motivoIngresoEgreso);
-            for (Dnomina dnominaListDnomina : motivoIngresoEgreso.getDnominaList()) {
-                MotivoIngresoEgreso oldCodMotivoOfDnominaListDnomina = dnominaListDnomina.getCodMotivo();
-                dnominaListDnomina.setCodMotivo(motivoIngresoEgreso);
+            cnomina.setDnominaList(attachedDnominaList);
+            em.persist(cnomina);
+            if (idEmpleado != null) {
+                idEmpleado.getCnominaList().add(cnomina);
+                idEmpleado = em.merge(idEmpleado);
+            }
+            for (Dnomina dnominaListDnomina : cnomina.getDnominaList()) {
+                Cnomina oldIdCabeceraOfDnominaListDnomina = dnominaListDnomina.getIdCabecera();
+                dnominaListDnomina.setIdCabecera(cnomina);
                 dnominaListDnomina = em.merge(dnominaListDnomina);
-                if (oldCodMotivoOfDnominaListDnomina != null) {
-                    oldCodMotivoOfDnominaListDnomina.getDnominaList().remove(dnominaListDnomina);
-                    oldCodMotivoOfDnominaListDnomina = em.merge(oldCodMotivoOfDnominaListDnomina);
+                if (oldIdCabeceraOfDnominaListDnomina != null) {
+                    oldIdCabeceraOfDnominaListDnomina.getDnominaList().remove(dnominaListDnomina);
+                    oldIdCabeceraOfDnominaListDnomina = em.merge(oldIdCabeceraOfDnominaListDnomina);
                 }
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
-            if (findMotivoIngresoEgreso(motivoIngresoEgreso.getCodigo()) != null) {
-                throw new PreexistingEntityException("MotivoIngresoEgreso " + motivoIngresoEgreso + " already exists.", ex);
+            if (findCnomina(cnomina.getIdCabecera()) != null) {
+                throw new PreexistingEntityException("Cnomina " + cnomina + " already exists.", ex);
             }
             throw ex;
         } finally {
@@ -72,25 +82,31 @@ public class MotivoIngresoEgresoJpaController implements Serializable {
         }
     }
 
-    public void edit(MotivoIngresoEgreso motivoIngresoEgreso) throws IllegalOrphanException, NonexistentEntityException, Exception {
+    public void edit(Cnomina cnomina) throws IllegalOrphanException, NonexistentEntityException, Exception {
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            MotivoIngresoEgreso persistentMotivoIngresoEgreso = em.find(MotivoIngresoEgreso.class, motivoIngresoEgreso.getCodigo());
-            List<Dnomina> dnominaListOld = persistentMotivoIngresoEgreso.getDnominaList();
-            List<Dnomina> dnominaListNew = motivoIngresoEgreso.getDnominaList();
+            Cnomina persistentCnomina = em.find(Cnomina.class, cnomina.getIdCabecera());
+            Empleado idEmpleadoOld = persistentCnomina.getIdEmpleado();
+            Empleado idEmpleadoNew = cnomina.getIdEmpleado();
+            List<Dnomina> dnominaListOld = persistentCnomina.getDnominaList();
+            List<Dnomina> dnominaListNew = cnomina.getDnominaList();
             List<String> illegalOrphanMessages = null;
             for (Dnomina dnominaListOldDnomina : dnominaListOld) {
                 if (!dnominaListNew.contains(dnominaListOldDnomina)) {
                     if (illegalOrphanMessages == null) {
                         illegalOrphanMessages = new ArrayList<String>();
                     }
-                    illegalOrphanMessages.add("You must retain Dnomina " + dnominaListOldDnomina + " since its codMotivo field is not nullable.");
+                    illegalOrphanMessages.add("You must retain Dnomina " + dnominaListOldDnomina + " since its idCabecera field is not nullable.");
                 }
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
+            }
+            if (idEmpleadoNew != null) {
+                idEmpleadoNew = em.getReference(idEmpleadoNew.getClass(), idEmpleadoNew.getIdEmpleado());
+                cnomina.setIdEmpleado(idEmpleadoNew);
             }
             List<Dnomina> attachedDnominaListNew = new ArrayList<Dnomina>();
             for (Dnomina dnominaListNewDnominaToAttach : dnominaListNew) {
@@ -98,16 +114,24 @@ public class MotivoIngresoEgresoJpaController implements Serializable {
                 attachedDnominaListNew.add(dnominaListNewDnominaToAttach);
             }
             dnominaListNew = attachedDnominaListNew;
-            motivoIngresoEgreso.setDnominaList(dnominaListNew);
-            motivoIngresoEgreso = em.merge(motivoIngresoEgreso);
+            cnomina.setDnominaList(dnominaListNew);
+            cnomina = em.merge(cnomina);
+            if (idEmpleadoOld != null && !idEmpleadoOld.equals(idEmpleadoNew)) {
+                idEmpleadoOld.getCnominaList().remove(cnomina);
+                idEmpleadoOld = em.merge(idEmpleadoOld);
+            }
+            if (idEmpleadoNew != null && !idEmpleadoNew.equals(idEmpleadoOld)) {
+                idEmpleadoNew.getCnominaList().add(cnomina);
+                idEmpleadoNew = em.merge(idEmpleadoNew);
+            }
             for (Dnomina dnominaListNewDnomina : dnominaListNew) {
                 if (!dnominaListOld.contains(dnominaListNewDnomina)) {
-                    MotivoIngresoEgreso oldCodMotivoOfDnominaListNewDnomina = dnominaListNewDnomina.getCodMotivo();
-                    dnominaListNewDnomina.setCodMotivo(motivoIngresoEgreso);
+                    Cnomina oldIdCabeceraOfDnominaListNewDnomina = dnominaListNewDnomina.getIdCabecera();
+                    dnominaListNewDnomina.setIdCabecera(cnomina);
                     dnominaListNewDnomina = em.merge(dnominaListNewDnomina);
-                    if (oldCodMotivoOfDnominaListNewDnomina != null && !oldCodMotivoOfDnominaListNewDnomina.equals(motivoIngresoEgreso)) {
-                        oldCodMotivoOfDnominaListNewDnomina.getDnominaList().remove(dnominaListNewDnomina);
-                        oldCodMotivoOfDnominaListNewDnomina = em.merge(oldCodMotivoOfDnominaListNewDnomina);
+                    if (oldIdCabeceraOfDnominaListNewDnomina != null && !oldIdCabeceraOfDnominaListNewDnomina.equals(cnomina)) {
+                        oldIdCabeceraOfDnominaListNewDnomina.getDnominaList().remove(dnominaListNewDnomina);
+                        oldIdCabeceraOfDnominaListNewDnomina = em.merge(oldIdCabeceraOfDnominaListNewDnomina);
                     }
                 }
             }
@@ -115,9 +139,9 @@ public class MotivoIngresoEgresoJpaController implements Serializable {
         } catch (Exception ex) {
             String msg = ex.getLocalizedMessage();
             if (msg == null || msg.length() == 0) {
-                Long id = motivoIngresoEgreso.getCodigo();
-                if (findMotivoIngresoEgreso(id) == null) {
-                    throw new NonexistentEntityException("The motivoIngresoEgreso with id " + id + " no longer exists.");
+                Long id = cnomina.getIdCabecera();
+                if (findCnomina(id) == null) {
+                    throw new NonexistentEntityException("The cnomina with id " + id + " no longer exists.");
                 }
             }
             throw ex;
@@ -133,25 +157,30 @@ public class MotivoIngresoEgresoJpaController implements Serializable {
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            MotivoIngresoEgreso motivoIngresoEgreso;
+            Cnomina cnomina;
             try {
-                motivoIngresoEgreso = em.getReference(MotivoIngresoEgreso.class, id);
-                motivoIngresoEgreso.getCodigo();
+                cnomina = em.getReference(Cnomina.class, id);
+                cnomina.getIdCabecera();
             } catch (EntityNotFoundException enfe) {
-                throw new NonexistentEntityException("The motivoIngresoEgreso with id " + id + " no longer exists.", enfe);
+                throw new NonexistentEntityException("The cnomina with id " + id + " no longer exists.", enfe);
             }
             List<String> illegalOrphanMessages = null;
-            List<Dnomina> dnominaListOrphanCheck = motivoIngresoEgreso.getDnominaList();
+            List<Dnomina> dnominaListOrphanCheck = cnomina.getDnominaList();
             for (Dnomina dnominaListOrphanCheckDnomina : dnominaListOrphanCheck) {
                 if (illegalOrphanMessages == null) {
                     illegalOrphanMessages = new ArrayList<String>();
                 }
-                illegalOrphanMessages.add("This MotivoIngresoEgreso (" + motivoIngresoEgreso + ") cannot be destroyed since the Dnomina " + dnominaListOrphanCheckDnomina + " in its dnominaList field has a non-nullable codMotivo field.");
+                illegalOrphanMessages.add("This Cnomina (" + cnomina + ") cannot be destroyed since the Dnomina " + dnominaListOrphanCheckDnomina + " in its dnominaList field has a non-nullable idCabecera field.");
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
-            em.remove(motivoIngresoEgreso);
+            Empleado idEmpleado = cnomina.getIdEmpleado();
+            if (idEmpleado != null) {
+                idEmpleado.getCnominaList().remove(cnomina);
+                idEmpleado = em.merge(idEmpleado);
+            }
+            em.remove(cnomina);
             em.getTransaction().commit();
         } finally {
             if (em != null) {
@@ -160,19 +189,19 @@ public class MotivoIngresoEgresoJpaController implements Serializable {
         }
     }
 
-    public List<MotivoIngresoEgreso> findMotivoIngresoEgresoEntities() {
-        return findMotivoIngresoEgresoEntities(true, -1, -1);
+    public List<Cnomina> findCnominaEntities() {
+        return findCnominaEntities(true, -1, -1);
     }
 
-    public List<MotivoIngresoEgreso> findMotivoIngresoEgresoEntities(int maxResults, int firstResult) {
-        return findMotivoIngresoEgresoEntities(false, maxResults, firstResult);
+    public List<Cnomina> findCnominaEntities(int maxResults, int firstResult) {
+        return findCnominaEntities(false, maxResults, firstResult);
     }
 
-    private List<MotivoIngresoEgreso> findMotivoIngresoEgresoEntities(boolean all, int maxResults, int firstResult) {
+    private List<Cnomina> findCnominaEntities(boolean all, int maxResults, int firstResult) {
         EntityManager em = getEntityManager();
         try {
             CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
-            cq.select(cq.from(MotivoIngresoEgreso.class));
+            cq.select(cq.from(Cnomina.class));
             Query q = em.createQuery(cq);
             if (!all) {
                 q.setMaxResults(maxResults);
@@ -184,20 +213,20 @@ public class MotivoIngresoEgresoJpaController implements Serializable {
         }
     }
 
-    public MotivoIngresoEgreso findMotivoIngresoEgreso(Long id) {
+    public Cnomina findCnomina(Long id) {
         EntityManager em = getEntityManager();
         try {
-            return em.find(MotivoIngresoEgreso.class, id);
+            return em.find(Cnomina.class, id);
         } finally {
             em.close();
         }
     }
 
-    public int getMotivoIngresoEgresoCount() {
+    public int getCnominaCount() {
         EntityManager em = getEntityManager();
         try {
             CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
-            Root<MotivoIngresoEgreso> rt = cq.from(MotivoIngresoEgreso.class);
+            Root<Cnomina> rt = cq.from(Cnomina.class);
             cq.select(em.getCriteriaBuilder().count(rt));
             Query q = em.createQuery(cq);
             return ((Long) q.getSingleResult()).intValue();

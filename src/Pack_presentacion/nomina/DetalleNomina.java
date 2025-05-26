@@ -5,17 +5,74 @@
  */
 package Pack_presentacion.nomina;
 
+import Pack_negocio.CnominaJpaController;
+import Pack_negocio.DnominaJpaController;
+import Pack_persistencia.Cnomina;
+import Pack_persistencia.Dnomina;
+import Pack_persistencia.Empleado;
+import Pack_persistencia.MotivoIngresoEgreso;
+import java.math.BigDecimal;
+import java.util.List;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import javax.swing.JOptionPane;
+import javax.swing.WindowConstants;
+
 /**
  *
  * @author HP
  */
 public class DetalleNomina extends javax.swing.JFrame {
 
+    private CnominaJpaController CnominaJpaController;
+    private DnominaJpaController DnominaJpaController;
+    private EntityManagerFactory emf;
+
     /**
      * Creates new form Detalle_Nomina
      */
     public DetalleNomina() {
         initComponents();
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        emf = Persistence.createEntityManagerFactory("ProyectoAppDistiPU");
+        CnominaJpaController = new CnominaJpaController(emf);
+        DnominaJpaController = new DnominaJpaController(emf);
+
+    }
+
+    private void loadDetalles(Long idCabecera) {
+        try {
+            // Obtener la cabecera de la nómina
+            Cnomina cabecera = CnominaJpaController.findCnomina(idCabecera);
+
+            if (cabecera == null) {
+                javax.swing.JOptionPane.showMessageDialog(this, "No se encontró la cabecera con ID: " + idCabecera);
+                return;
+            }
+
+            // Mostrar datos de cabecera
+            Num_Nomina_txt.setText(String.valueOf(cabecera.getIdCabecera()));
+            fecha_txt.setText(String.valueOf(cabecera.getFechaPago()));
+            empleado_txt.setText(String.valueOf(cabecera.getIdEmpleado().getNombre()));
+
+            // Aquí asumimos que cada detalle tiene un motivo y que se accede desde el detalle (relación ManyToOne)
+            List<Dnomina> detalles = cabecera.getDnominaList();
+
+            javax.swing.table.DefaultTableModel modelo = (javax.swing.table.DefaultTableModel) jTable1.getModel();
+            modelo.setRowCount(0);
+
+            for (Dnomina d : detalles) {
+                String motivo = d.getCodMotivo().getNombre();
+                String tipo = d.getCodMotivo().getTipo();
+                String valor = d.getTotalPagar().toString();  // TOTAL_PAGAR es campo virtual o calculado
+                modelo.addRow(new Object[]{motivo, tipo, valor});
+            }
+
+        } catch (Exception e) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Error al cargar datos: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -35,6 +92,13 @@ public class DetalleNomina extends javax.swing.JFrame {
         Buscar_BTN = new javax.swing.JButton();
         Eliminar_BTN = new javax.swing.JButton();
         Modificar_BTN = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        Num_Nomina_txt = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        fecha_txt = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        empleado_txt = new javax.swing.JTextField();
+        Cargar_BTN = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -43,23 +107,15 @@ public class DetalleNomina extends javax.swing.JFrame {
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null}
+                {null, null, null},
+                {null, null, null},
+                {null, null, null},
+                {null, null, null}
             },
             new String [] {
-                "Numero", "Fecha", "Empleado", "Motivo", "Valor"
+                "Motivo", "Nombre", "Valor"
             }
-        ) {
-            boolean[] canEdit = new boolean [] {
-                false, false, false, true, true
-            };
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
+        ));
         jScrollPane1.setViewportView(jTable1);
 
         Agregar_BTN.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
@@ -94,6 +150,19 @@ public class DetalleNomina extends javax.swing.JFrame {
             }
         });
 
+        jLabel2.setText("Numero de Nomina:");
+
+        jLabel3.setText("Fecha:");
+
+        jLabel4.setText("Empleado:");
+
+        Cargar_BTN.setText("Cargar Informacion");
+        Cargar_BTN.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Cargar_BTNActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -103,39 +172,68 @@ public class DetalleNomina extends javax.swing.JFrame {
                 .addComponent(jLabel1)
                 .addGap(221, 221, 221))
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(22, 22, 22)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 800, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(24, Short.MAX_VALUE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(36, 36, 36)
+                        .addGap(59, 59, 59)
                         .addComponent(Agregar_BTN)
-                        .addGap(81, 81, 81)
+                        .addGap(96, 96, 96)
                         .addComponent(Buscar_BTN)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(100, 100, 100)
                         .addComponent(Modificar_BTN)
-                        .addGap(105, 105, 105)
-                        .addComponent(Eliminar_BTN)
-                        .addGap(85, 85, 85))))
+                        .addGap(108, 108, 108)
+                        .addComponent(Eliminar_BTN))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(22, 22, 22)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 800, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(34, 34, 34)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(Num_Nomina_txt, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(109, 109, 109)
+                                .addComponent(jLabel4)
+                                .addGap(30, 30, 30)
+                                .addComponent(empleado_txt, javax.swing.GroupLayout.PREFERRED_SIZE, 244, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel3)
+                                .addGap(30, 30, 30)
+                                .addComponent(fecha_txt, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(Cargar_BTN)
+                                .addGap(171, 171, 171)))))
+                .addContainerGap(24, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(jLabel1)
+                .addGap(13, 13, 13)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(Num_Nomina_txt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4)
+                    .addComponent(empleado_txt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(38, 38, 38)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(106, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(Agregar_BTN)
-                            .addComponent(Buscar_BTN)
-                            .addComponent(Eliminar_BTN)
-                            .addComponent(Modificar_BTN))
-                        .addGap(49, 49, 49))))
+                            .addComponent(jLabel3)
+                            .addComponent(fecha_txt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(Cargar_BTN)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(28, 28, 28)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Agregar_BTN)
+                    .addComponent(Buscar_BTN)
+                    .addComponent(Modificar_BTN)
+                    .addComponent(Eliminar_BTN))
+                .addGap(30, 30, 30))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -154,19 +252,189 @@ public class DetalleNomina extends javax.swing.JFrame {
 
     private void Agregar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Agregar_BTNActionPerformed
         // TODO add your handling code here:
+        try {
+            // === Paso 1: Crear Cabecera ===
+
+            // Obtener fecha
+            String fechaStr = fecha_txt.getText().trim();
+            if (fechaStr.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Ingrese la fecha de pago.");
+                return;
+            }
+            java.util.Date fechaPago = new java.text.SimpleDateFormat("yyyy-MM-dd").parse(fechaStr);
+
+            // Obtener nombre del empleado
+            String nombreEmpleado = empleado_txt.getText().trim();
+            if (nombreEmpleado.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Ingrese el nombre del empleado.");
+                return;
+            }
+
+            // Buscar empleado
+            Empleado empleado = buscarEmpleadoPorNombre(nombreEmpleado);
+            if (empleado == null) {
+                JOptionPane.showMessageDialog(this, "Empleado no encontrado.");
+                return;
+            }
+
+            // Crear y guardar cabecera
+            Cnomina cabecera = new Cnomina();
+            cabecera.setFechaPago(fechaPago);
+            cabecera.setIdEmpleado(empleado);
+            cabecera.setTotalPagado(BigDecimal.ZERO);  // Inicialmente 0
+
+            CnominaJpaController.create(cabecera);  // Guardar en BD
+
+            // Confirmación
+            JOptionPane.showMessageDialog(this,
+                    "Cabecera creada correctamente:\n\n"
+                    + "ID: " + cabecera.getIdCabecera() + "\n"
+                    + "Fecha de Pago: " + fechaPago + "\n"
+                    + "Empleado: " + empleado.getNombre(),
+                    "Cabecera registrada", JOptionPane.INFORMATION_MESSAGE
+            );
+
+            // === Paso 2: Crear Detalle ===
+            // Pedir ID del motivo
+            String idMotivoStr = JOptionPane.showInputDialog("Ingrese el ID del motivo:");
+            if (idMotivoStr == null || idMotivoStr.trim().isEmpty()) {
+                return;
+            }
+
+            Long idMotivo = Long.parseLong(idMotivoStr);
+            MotivoIngresoEgreso motivo = emf.createEntityManager().find(MotivoIngresoEgreso.class, idMotivo);
+            if (motivo == null) {
+                JOptionPane.showMessageDialog(this, "Motivo no encontrado.");
+                return;
+            }
+
+            // Obtener datos del detalle
+            BigDecimal seguro = new BigDecimal(JOptionPane.showInputDialog("Ingrese el SEGURO:"));
+            BigDecimal sueldoBase = new BigDecimal(empleado.getSueldo());
+            BigDecimal total = sueldoBase.subtract(seguro);
+
+            // Crear y guardar detalle
+            Dnomina detalle = new Dnomina();
+            detalle.setIdCabecera(cabecera);     // Relacionarlo con la cabecera
+            detalle.setCodMotivo(motivo);
+            detalle.setSueldoBase(sueldoBase);
+            detalle.setSeguro(seguro);
+
+            DnominaJpaController.create(detalle);
+
+            // Actualizar total en cabecera
+            cabecera.setTotalPagado(total);
+            CnominaJpaController.edit(cabecera);  // Guardar edición
+
+            // Mostrar detalles en pantalla
+            loadDetalles(cabecera.getIdCabecera());
+
+            JOptionPane.showMessageDialog(this, "Detalle de nómina registrado correctamente.");
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error al agregar nómina: " + e.getMessage());
+            e.printStackTrace();
+        }
     }//GEN-LAST:event_Agregar_BTNActionPerformed
 
     private void Buscar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Buscar_BTNActionPerformed
         // TODO add your handling code here:
+        try {
+        // Pedir al usuario el ID de la cabecera de nómina
+        String idCabeceraStr = JOptionPane.showInputDialog(this, "Ingrese el ID de la cabecera de nómina a buscar:");
+        if (idCabeceraStr == null || idCabeceraStr.trim().isEmpty()) {
+            return;  // usuario canceló o no ingresó nada
+        }
+
+        Long idCabecera = Long.parseLong(idCabeceraStr);
+
+        // Buscar cabecera usando el JPA Controller
+        Cnomina cabecera = CnominaJpaController.findCnomina(idCabecera);
+
+        if (cabecera == null) {
+            JOptionPane.showMessageDialog(this, "No se encontró la cabecera con ID: " + idCabecera);
+            return;
+        }
+
+        // Mostrar info encontrada
+        // Cargar detalles en la tabla usando tu método
+        loadDetalles(idCabecera);
+
+    } catch (NumberFormatException nfe) {
+        JOptionPane.showMessageDialog(this, "ID inválido. Debe ser un número.");
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, "Error al buscar nómina: " + e.getMessage());
+        e.printStackTrace();
+    }
     }//GEN-LAST:event_Buscar_BTNActionPerformed
 
     private void Eliminar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Eliminar_BTNActionPerformed
         // TODO add your handling code here:
+        try {
+        // Pedir ID de la cabecera a eliminar
+        String idCabeceraStr = JOptionPane.showInputDialog(this, "Ingrese el ID de la cabecera de nómina a eliminar:");
+        if (idCabeceraStr == null || idCabeceraStr.trim().isEmpty()) {
+            return;  // Canceló o no ingresó nada
+        }
+
+        Long idCabecera = Long.parseLong(idCabeceraStr);
+
+        // Confirmar eliminación
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "¿Está seguro que desea eliminar la nómina con ID: " + idCabecera + "?",
+                "Confirmar eliminación",
+                JOptionPane.YES_NO_OPTION);
+
+        if (confirm != JOptionPane.YES_OPTION) {
+            return; // El usuario canceló
+        }
+
+        // Antes de eliminar la cabecera, eliminar detalles asociados si la relación no está en cascada.
+        Cnomina cabecera = CnominaJpaController.findCnomina(idCabecera);
+        if (cabecera == null) {
+            JOptionPane.showMessageDialog(this, "No se encontró la cabecera con ID: " + idCabecera);
+            return;
+        }
+
+        // Eliminar detalles asociados primero si no hay cascada
+        List<Dnomina> detalles = cabecera.getDnominaList();
+        for (Dnomina detalle : detalles) {
+            DnominaJpaController.destroy(detalle.getIdDetalle());
+        }
+
+        // Eliminar la cabecera
+        CnominaJpaController.destroy(idCabecera);
+
+        // Limpiar campos 
+        Num_Nomina_txt.setText("");
+        fecha_txt.setText("");
+        empleado_txt.setText("");
+        javax.swing.table.DefaultTableModel modelo = (javax.swing.table.DefaultTableModel) jTable1.getModel();
+        modelo.setRowCount(0);
+
+        JOptionPane.showMessageDialog(this, "Nómina eliminada correctamente.");
+
+    } catch (NumberFormatException nfe) {
+        JOptionPane.showMessageDialog(this, "ID inválido. Debe ser un número.");
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, "Error al eliminar nómina: " + e.getMessage());
+        e.printStackTrace();
+    }
     }//GEN-LAST:event_Eliminar_BTNActionPerformed
 
     private void Modificar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Modificar_BTNActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_Modificar_BTNActionPerformed
+
+    private void Cargar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Cargar_BTNActionPerformed
+        // TODO add your handling code here:
+        try {
+            Long id = Long.parseLong(Num_Nomina_txt.getText());
+            loadDetalles(id);
+        } catch (NumberFormatException e) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Ingrese un número válido de nómina.");
+        }
+    }//GEN-LAST:event_Cargar_BTNActionPerformed
 
     /**
      * @param args the command line arguments
@@ -209,11 +477,28 @@ public class DetalleNomina extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Agregar_BTN;
     private javax.swing.JButton Buscar_BTN;
+    private javax.swing.JButton Cargar_BTN;
     private javax.swing.JButton Eliminar_BTN;
     private javax.swing.JButton Modificar_BTN;
+    private javax.swing.JTextField Num_Nomina_txt;
+    private javax.swing.JTextField empleado_txt;
+    private javax.swing.JTextField fecha_txt;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
     // End of variables declaration//GEN-END:variables
+
+    private Empleado buscarEmpleadoPorNombre(String nombreEmpleado) {
+        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        List<Empleado> lista = emf.createEntityManager()
+                .createQuery("SELECT e FROM Empleado e WHERE e.nombre = :nombre", Empleado.class)
+                .setParameter("nombre", nombreEmpleado)
+                .getResultList();
+
+        return lista.isEmpty() ? null : lista.get(0);
+    }
 }

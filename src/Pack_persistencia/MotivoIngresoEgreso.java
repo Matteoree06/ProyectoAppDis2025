@@ -6,14 +6,18 @@
 package Pack_persistencia;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -28,6 +32,9 @@ import javax.xml.bind.annotation.XmlRootElement;
     , @NamedQuery(name = "MotivoIngresoEgreso.findByNombre", query = "SELECT m FROM MotivoIngresoEgreso m WHERE m.nombre = :nombre")
     , @NamedQuery(name = "MotivoIngresoEgreso.findByTipo", query = "SELECT m FROM MotivoIngresoEgreso m WHERE m.tipo = :tipo")})
 public class MotivoIngresoEgreso implements Serializable {
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "codMotivo")
+    private List<Dnomina> dnominaList;
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -100,5 +107,14 @@ public class MotivoIngresoEgreso implements Serializable {
     public String toString() {
         return "Pack_persistencia.MotivoIngresoEgreso[ codigo=" + codigo + " ]";
     }
-    
+
+    @XmlTransient
+    public List<Dnomina> getDnominaList() {
+        return dnominaList;
+    }
+
+    public void setDnominaList(List<Dnomina> dnominaList) {
+        this.dnominaList = dnominaList;
+    }
+
 }
