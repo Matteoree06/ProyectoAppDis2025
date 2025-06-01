@@ -5,17 +5,58 @@
  */
 package Pack_presentacion.nomina;
 
+import Pack_negocio.DnominaJpaController;
+import Pack_negocio.EmpleadoJpaController;
+import Pack_persistencia.Dnomina;
+import Pack_persistencia.Empleado;
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Set;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import javax.swing.WindowConstants;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author HP
  */
 public class Valores_pagar extends javax.swing.JFrame {
+    private DnominaJpaController DnominaJpaController;
+    private EmpleadoJpaController EmpleadoJpaController;
+    private EntityManagerFactory emf;
 
     /**
      * Creates new form Valores_Pagar
      */
     public Valores_pagar() {
         initComponents();
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        emf = Persistence.createEntityManagerFactory("ProyectoAppDistiPU");
+        DnominaJpaController = new DnominaJpaController(emf);
+        EmpleadoJpaController = new EmpleadoJpaController(emf);
+        loadValores();
+    }
+    
+    private void loadValores() {
+        List<Empleado> empleados = EmpleadoJpaController.findEmpleadoEntities();
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        model.setRowCount(0); // Limpiar la tabla antes de cargar los datos
+
+        for (Empleado empleado : empleados) {
+            List<Pack_persistencia.ValoresPagar> valores = empleado.getValoresPagarList();
+            for (Pack_persistencia.ValoresPagar valor : valores) {
+                Dnomina detalle = valor.getIdDetalle();
+                if (detalle != null && detalle.getTotalPagar() != null) {
+                    model.addRow(new Object[]{
+                        empleado.getNombre(),
+                        detalle.getTotalPagar(), 
+                        valor.getFechaGeneracion()
+                    });
+                }
+            }
+        }
     }
 
     /**
@@ -32,6 +73,11 @@ public class Valores_pagar extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
+        Agregar_BTN = new javax.swing.JButton();
+        Buscar_BTN = new javax.swing.JButton();
+        Modificar_BTN = new javax.swing.JButton();
+        Eliminar_BTN = new javax.swing.JButton();
+        Imprimir_BTN = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -40,18 +86,58 @@ public class Valores_pagar extends javax.swing.JFrame {
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null}
+                {null, null, null},
+                {null, null, null},
+                {null, null, null},
+                {null, null, null}
             },
             new String [] {
-                "Empleado", "Valor a Recibir"
+                "Empleado", "Valor a Recibir", "Fecha"
             }
         ));
         jScrollPane2.setViewportView(jTable1);
 
         jScrollPane1.setViewportView(jScrollPane2);
+
+        Agregar_BTN.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        Agregar_BTN.setText("Agregar");
+        Agregar_BTN.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Agregar_BTNActionPerformed(evt);
+            }
+        });
+
+        Buscar_BTN.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        Buscar_BTN.setText("Buscar");
+        Buscar_BTN.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Buscar_BTNActionPerformed(evt);
+            }
+        });
+
+        Modificar_BTN.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        Modificar_BTN.setText("Modificar");
+        Modificar_BTN.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Modificar_BTNActionPerformed(evt);
+            }
+        });
+
+        Eliminar_BTN.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        Eliminar_BTN.setText("Eliminar");
+        Eliminar_BTN.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Eliminar_BTNActionPerformed(evt);
+            }
+        });
+
+        Imprimir_BTN.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        Imprimir_BTN.setText("Imprimir");
+        Imprimir_BTN.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Imprimir_BTNActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -63,8 +149,21 @@ public class Valores_pagar extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap(124, Short.MAX_VALUE)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 629, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(Agregar_BTN)
+                        .addGap(85, 85, 85)
+                        .addComponent(Buscar_BTN)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(Modificar_BTN)
+                        .addGap(78, 78, 78)
+                        .addComponent(Eliminar_BTN))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 629, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(93, 93, 93))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(Imprimir_BTN)
+                .addGap(26, 26, 26))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -73,7 +172,15 @@ public class Valores_pagar extends javax.swing.JFrame {
                 .addComponent(jLabel1)
                 .addGap(28, 28, 28)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(95, Short.MAX_VALUE))
+                .addGap(32, 32, 32)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Agregar_BTN)
+                    .addComponent(Buscar_BTN)
+                    .addComponent(Modificar_BTN)
+                    .addComponent(Eliminar_BTN))
+                .addGap(18, 18, 18)
+                .addComponent(Imprimir_BTN)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -89,6 +196,39 @@ public class Valores_pagar extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void Agregar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Agregar_BTNActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Agregar_BTNActionPerformed
+
+    private void Buscar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Buscar_BTNActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Buscar_BTNActionPerformed
+
+    private void Modificar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Modificar_BTNActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Modificar_BTNActionPerformed
+
+    private void Eliminar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Eliminar_BTNActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Eliminar_BTNActionPerformed
+
+    private void Imprimir_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Imprimir_BTNActionPerformed
+        // TODO add your handling code here:
+        MessageFormat header = new MessageFormat("Reporte de Valores a Pagar");
+        MessageFormat footer = new MessageFormat("Página {0}");
+
+        try {
+            boolean completo = jTable1.print(javax.swing.JTable.PrintMode.FIT_WIDTH, header, footer);
+            if (completo) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Impresión completada correctamente.");
+            } else {
+                javax.swing.JOptionPane.showMessageDialog(this, "Impresión cancelada.");
+            }
+        } catch (java.awt.print.PrinterException e) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Error al imprimir: " + e.getMessage());
+        }
+    }//GEN-LAST:event_Imprimir_BTNActionPerformed
 
     /**
      * @param args the command line arguments
@@ -127,6 +267,11 @@ public class Valores_pagar extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton Agregar_BTN;
+    private javax.swing.JButton Buscar_BTN;
+    private javax.swing.JButton Eliminar_BTN;
+    private javax.swing.JButton Imprimir_BTN;
+    private javax.swing.JButton Modificar_BTN;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;

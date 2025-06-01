@@ -15,6 +15,8 @@ import javax.persistence.criteria.Root;
 import Pack_persistencia.Cnomina;
 import Pack_persistencia.Dnomina;
 import Pack_persistencia.MotivoIngresoEgreso;
+import Pack_persistencia.ValoresPagar;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -35,6 +37,9 @@ public class DnominaJpaController implements Serializable {
     }
 
     public void create(Dnomina dnomina) throws PreexistingEntityException, Exception {
+        if (dnomina.getValoresPagarList() == null) {
+            dnomina.setValoresPagarList(new ArrayList<ValoresPagar>());
+        }
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -49,6 +54,12 @@ public class DnominaJpaController implements Serializable {
                 codMotivo = em.getReference(codMotivo.getClass(), codMotivo.getCodigo());
                 dnomina.setCodMotivo(codMotivo);
             }
+            List<ValoresPagar> attachedValoresPagarList = new ArrayList<ValoresPagar>();
+            for (ValoresPagar valoresPagarListValoresPagarToAttach : dnomina.getValoresPagarList()) {
+                valoresPagarListValoresPagarToAttach = em.getReference(valoresPagarListValoresPagarToAttach.getClass(), valoresPagarListValoresPagarToAttach.getIdValor());
+                attachedValoresPagarList.add(valoresPagarListValoresPagarToAttach);
+            }
+            dnomina.setValoresPagarList(attachedValoresPagarList);
             em.persist(dnomina);
             if (idCabecera != null) {
                 idCabecera.getDnominaList().add(dnomina);
@@ -57,6 +68,15 @@ public class DnominaJpaController implements Serializable {
             if (codMotivo != null) {
                 codMotivo.getDnominaList().add(dnomina);
                 codMotivo = em.merge(codMotivo);
+            }
+            for (ValoresPagar valoresPagarListValoresPagar : dnomina.getValoresPagarList()) {
+                Dnomina oldIdDetalleOfValoresPagarListValoresPagar = valoresPagarListValoresPagar.getIdDetalle();
+                valoresPagarListValoresPagar.setIdDetalle(dnomina);
+                valoresPagarListValoresPagar = em.merge(valoresPagarListValoresPagar);
+                if (oldIdDetalleOfValoresPagarListValoresPagar != null) {
+                    oldIdDetalleOfValoresPagarListValoresPagar.getValoresPagarList().remove(valoresPagarListValoresPagar);
+                    oldIdDetalleOfValoresPagarListValoresPagar = em.merge(oldIdDetalleOfValoresPagarListValoresPagar);
+                }
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
@@ -81,6 +101,8 @@ public class DnominaJpaController implements Serializable {
             Cnomina idCabeceraNew = dnomina.getIdCabecera();
             MotivoIngresoEgreso codMotivoOld = persistentDnomina.getCodMotivo();
             MotivoIngresoEgreso codMotivoNew = dnomina.getCodMotivo();
+            List<ValoresPagar> valoresPagarListOld = persistentDnomina.getValoresPagarList();
+            List<ValoresPagar> valoresPagarListNew = dnomina.getValoresPagarList();
             if (idCabeceraNew != null) {
                 idCabeceraNew = em.getReference(idCabeceraNew.getClass(), idCabeceraNew.getIdCabecera());
                 dnomina.setIdCabecera(idCabeceraNew);
@@ -89,6 +111,13 @@ public class DnominaJpaController implements Serializable {
                 codMotivoNew = em.getReference(codMotivoNew.getClass(), codMotivoNew.getCodigo());
                 dnomina.setCodMotivo(codMotivoNew);
             }
+            List<ValoresPagar> attachedValoresPagarListNew = new ArrayList<ValoresPagar>();
+            for (ValoresPagar valoresPagarListNewValoresPagarToAttach : valoresPagarListNew) {
+                valoresPagarListNewValoresPagarToAttach = em.getReference(valoresPagarListNewValoresPagarToAttach.getClass(), valoresPagarListNewValoresPagarToAttach.getIdValor());
+                attachedValoresPagarListNew.add(valoresPagarListNewValoresPagarToAttach);
+            }
+            valoresPagarListNew = attachedValoresPagarListNew;
+            dnomina.setValoresPagarList(valoresPagarListNew);
             dnomina = em.merge(dnomina);
             if (idCabeceraOld != null && !idCabeceraOld.equals(idCabeceraNew)) {
                 idCabeceraOld.getDnominaList().remove(dnomina);
@@ -105,6 +134,23 @@ public class DnominaJpaController implements Serializable {
             if (codMotivoNew != null && !codMotivoNew.equals(codMotivoOld)) {
                 codMotivoNew.getDnominaList().add(dnomina);
                 codMotivoNew = em.merge(codMotivoNew);
+            }
+            for (ValoresPagar valoresPagarListOldValoresPagar : valoresPagarListOld) {
+                if (!valoresPagarListNew.contains(valoresPagarListOldValoresPagar)) {
+                    valoresPagarListOldValoresPagar.setIdDetalle(null);
+                    valoresPagarListOldValoresPagar = em.merge(valoresPagarListOldValoresPagar);
+                }
+            }
+            for (ValoresPagar valoresPagarListNewValoresPagar : valoresPagarListNew) {
+                if (!valoresPagarListOld.contains(valoresPagarListNewValoresPagar)) {
+                    Dnomina oldIdDetalleOfValoresPagarListNewValoresPagar = valoresPagarListNewValoresPagar.getIdDetalle();
+                    valoresPagarListNewValoresPagar.setIdDetalle(dnomina);
+                    valoresPagarListNewValoresPagar = em.merge(valoresPagarListNewValoresPagar);
+                    if (oldIdDetalleOfValoresPagarListNewValoresPagar != null && !oldIdDetalleOfValoresPagarListNewValoresPagar.equals(dnomina)) {
+                        oldIdDetalleOfValoresPagarListNewValoresPagar.getValoresPagarList().remove(valoresPagarListNewValoresPagar);
+                        oldIdDetalleOfValoresPagarListNewValoresPagar = em.merge(oldIdDetalleOfValoresPagarListNewValoresPagar);
+                    }
+                }
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
@@ -144,6 +190,11 @@ public class DnominaJpaController implements Serializable {
             if (codMotivo != null) {
                 codMotivo.getDnominaList().remove(dnomina);
                 codMotivo = em.merge(codMotivo);
+            }
+            List<ValoresPagar> valoresPagarList = dnomina.getValoresPagarList();
+            for (ValoresPagar valoresPagarListValoresPagar : valoresPagarList) {
+                valoresPagarListValoresPagar.setIdDetalle(null);
+                valoresPagarListValoresPagar = em.merge(valoresPagarListValoresPagar);
             }
             em.remove(dnomina);
             em.getTransaction().commit();

@@ -38,7 +38,7 @@ public class CnominaJpaController implements Serializable {
 
     public void create(Cnomina cnomina) throws PreexistingEntityException, Exception {
         if (cnomina.getDnominaList() == null) {
-            cnomina.setDnominaList(new ArrayList<>());
+            cnomina.setDnominaList(new ArrayList<Dnomina>());
         }
         EntityManager em = null;
         try {
@@ -49,7 +49,7 @@ public class CnominaJpaController implements Serializable {
                 idEmpleado = em.getReference(idEmpleado.getClass(), idEmpleado.getIdEmpleado());
                 cnomina.setIdEmpleado(idEmpleado);
             }
-            List<Dnomina> attachedDnominaList = new ArrayList<>();
+            List<Dnomina> attachedDnominaList = new ArrayList<Dnomina>();
             for (Dnomina dnominaListDnominaToAttach : cnomina.getDnominaList()) {
                 dnominaListDnominaToAttach = em.getReference(dnominaListDnominaToAttach.getClass(), dnominaListDnominaToAttach.getIdDetalle());
                 attachedDnominaList.add(dnominaListDnominaToAttach);
@@ -234,7 +234,5 @@ public class CnominaJpaController implements Serializable {
             em.close();
         }
     }
-    
-    
     
 }
