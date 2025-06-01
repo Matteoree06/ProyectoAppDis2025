@@ -7,6 +7,7 @@ package Pack_persistencia;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,8 +16,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -32,6 +35,9 @@ import javax.xml.bind.annotation.XmlRootElement;
     , @NamedQuery(name = "Dnomina.findBySeguro", query = "SELECT d FROM Dnomina d WHERE d.seguro = :seguro")
     , @NamedQuery(name = "Dnomina.findByTotalPagar", query = "SELECT d FROM Dnomina d WHERE d.totalPagar = :totalPagar")})
 public class Dnomina implements Serializable {
+
+    @OneToMany(mappedBy = "idDetalle")
+    private List<ValoresPagar> valoresPagarList;
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -136,6 +142,15 @@ public class Dnomina implements Serializable {
     @Override
     public String toString() {
         return "Pack_persistencia.Dnomina[ idDetalle=" + idDetalle + " ]";
+    }
+
+    @XmlTransient
+    public List<ValoresPagar> getValoresPagarList() {
+        return valoresPagarList;
+    }
+
+    public void setValoresPagarList(List<ValoresPagar> valoresPagarList) {
+        this.valoresPagarList = valoresPagarList;
     }
     
 }
