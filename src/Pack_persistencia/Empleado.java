@@ -40,9 +40,6 @@ import javax.xml.bind.annotation.XmlTransient;
     , @NamedQuery(name = "Empleado.findBySueldo", query = "SELECT e FROM Empleado e WHERE e.sueldo = :sueldo")})
 public class Empleado implements Serializable {
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "idEmpleado")
-    private List<Cnomina> cnominaList;
-
     private static final long serialVersionUID = 1L;
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Id
@@ -62,6 +59,8 @@ public class Empleado implements Serializable {
     @Basic(optional = false)
     @Column(name = "SUELDO")
     private BigInteger sueldo;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "idEmpleado")
+    private List<Cnomina> cnominaList;
 
     public Empleado() {
     }
@@ -118,6 +117,15 @@ public class Empleado implements Serializable {
         this.sueldo = sueldo;
     }
 
+    @XmlTransient
+    public List<Cnomina> getCnominaList() {
+        return cnominaList;
+    }
+
+    public void setCnominaList(List<Cnomina> cnominaList) {
+        this.cnominaList = cnominaList;
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -141,14 +149,6 @@ public class Empleado implements Serializable {
     @Override
     public String toString() {
         return "Pack_persistencia.Empleado[ idEmpleado=" + idEmpleado + " ]";
-    }    
-
-    @XmlTransient
-    public List<Cnomina> getCnominaList() {
-        return cnominaList;
     }
-
-    public void setCnominaList(List<Cnomina> cnominaList) {
-        this.cnominaList = cnominaList;
-    }
+    
 }

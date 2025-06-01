@@ -13,6 +13,7 @@ import Pack_persistencia.Empleado;
 import Pack_persistencia.MotivoIngresoEgreso;
 import java.math.BigDecimal;
 import java.util.List;
+import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.swing.JOptionPane;
@@ -98,7 +99,6 @@ public class DetalleNomina extends javax.swing.JFrame {
         fecha_txt = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         empleado_txt = new javax.swing.JTextField();
-        Cargar_BTN = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -156,13 +156,6 @@ public class DetalleNomina extends javax.swing.JFrame {
 
         jLabel4.setText("Empleado:");
 
-        Cargar_BTN.setText("Cargar Informacion");
-        Cargar_BTN.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Cargar_BTNActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -200,8 +193,6 @@ public class DetalleNomina extends javax.swing.JFrame {
                                 .addComponent(jLabel3)
                                 .addGap(30, 30, 30)
                                 .addComponent(fecha_txt, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(Cargar_BTN)
                                 .addGap(171, 171, 171)))))
                 .addContainerGap(24, Short.MAX_VALUE))
         );
@@ -215,17 +206,11 @@ public class DetalleNomina extends javax.swing.JFrame {
                     .addComponent(Num_Nomina_txt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel4)
                     .addComponent(empleado_txt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel3)
-                            .addComponent(fecha_txt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(18, 18, 18))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(18, 18, 18)
-                        .addComponent(Cargar_BTN)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 15, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(fecha_txt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(28, 28, 28)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -253,9 +238,6 @@ public class DetalleNomina extends javax.swing.JFrame {
     private void Agregar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Agregar_BTNActionPerformed
         // TODO add your handling code here:
         try {
-            // === Paso 1: Crear Cabecera ===
-
-            // Obtener fecha
             String fechaStr = fecha_txt.getText().trim();
             if (fechaStr.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Ingrese la fecha de pago.");
@@ -263,14 +245,12 @@ public class DetalleNomina extends javax.swing.JFrame {
             }
             java.util.Date fechaPago = new java.text.SimpleDateFormat("yyyy-MM-dd").parse(fechaStr);
 
-            // Obtener nombre del empleado
             String nombreEmpleado = empleado_txt.getText().trim();
             if (nombreEmpleado.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Ingrese el nombre del empleado.");
                 return;
             }
 
-            // Buscar empleado
             Empleado empleado = buscarEmpleadoPorNombre(nombreEmpleado);
             if (empleado == null) {
                 JOptionPane.showMessageDialog(this, "Empleado no encontrado.");
@@ -281,11 +261,27 @@ public class DetalleNomina extends javax.swing.JFrame {
             Cnomina cabecera = new Cnomina();
             cabecera.setFechaPago(fechaPago);
             cabecera.setIdEmpleado(empleado);
-            cabecera.setTotalPagado(BigDecimal.ZERO);  // Inicialmente 0
+            //cabecera.setTotalPagado(BigDecimal.ZERO);
 
-            CnominaJpaController.create(cabecera);  // Guardar en BD
+            CnominaJpaController.create(cabecera);
 
-            // Confirmación
+            // Recargar la cabecera desde la BD (con ID actualizado)
+            EntityManager em = emf.createEntityManager();
+            try {
+                cabecera = em.createQuery(
+                        "SELECT c FROM Cnomina c WHERE c.idEmpleado = :empleado AND c.fechaPago = :fecha",
+                        Cnomina.class
+                )
+                        .setParameter("empleado", empleado)
+                        .setParameter("fecha", fechaPago)
+                        .setMaxResults(1)
+                        .getSingleResult();
+            } finally {
+                em.close();
+            }
+
+            System.out.println("[LOG] Cabecera creada con ID: " + cabecera.getIdCabecera());
+
             JOptionPane.showMessageDialog(this,
                     "Cabecera creada correctamente:\n\n"
                     + "ID: " + cabecera.getIdCabecera() + "\n"
@@ -294,8 +290,7 @@ public class DetalleNomina extends javax.swing.JFrame {
                     "Cabecera registrada", JOptionPane.INFORMATION_MESSAGE
             );
 
-            // === Paso 2: Crear Detalle ===
-            // Pedir ID del motivo
+            // Crear detalle
             String idMotivoStr = JOptionPane.showInputDialog("Ingrese el ID del motivo:");
             if (idMotivoStr == null || idMotivoStr.trim().isEmpty()) {
                 return;
@@ -308,27 +303,41 @@ public class DetalleNomina extends javax.swing.JFrame {
                 return;
             }
 
-            // Obtener datos del detalle
             BigDecimal seguro = new BigDecimal(JOptionPane.showInputDialog("Ingrese el SEGURO:"));
             BigDecimal sueldoBase = new BigDecimal(empleado.getSueldo());
             BigDecimal total = sueldoBase.subtract(seguro);
 
-            // Crear y guardar detalle
             Dnomina detalle = new Dnomina();
-            detalle.setIdCabecera(cabecera);     // Relacionarlo con la cabecera
+            detalle.setIdCabecera(cabecera);
             detalle.setCodMotivo(motivo);
             detalle.setSueldoBase(sueldoBase);
             detalle.setSeguro(seguro);
 
             DnominaJpaController.create(detalle);
 
-            // Actualizar total en cabecera
-            cabecera.setTotalPagado(total);
-            CnominaJpaController.edit(cabecera);  // Guardar edición
+            // Recargar el detalle desde la BD (con ID actualizado)
+            EntityManager emDetalle = emf.createEntityManager();
+            try {
+                detalle = emDetalle.createQuery(
+                        "SELECT d FROM Dnomina d WHERE d.idCabecera = :cabecera AND d.codMotivo = :motivo AND d.sueldoBase = :sueldo AND d.seguro = :seguro",
+                        Dnomina.class
+                )
+                        .setParameter("cabecera", cabecera)
+                        .setParameter("motivo", motivo)
+                        .setParameter("sueldo", sueldoBase)
+                        .setParameter("seguro", seguro)
+                        .setMaxResults(1)
+                        .getSingleResult();
+            } finally {
+                emDetalle.close();
+            }
 
-            // Mostrar detalles en pantalla
+            System.out.println("[LOG] Detalle creado con ID: " + detalle.getIdDetalle());
+            System.out.println("[LOG] Detalle creado exitosamente para la cabecera ID: " + cabecera.getIdCabecera());
+
+            //cabecera.setTotalPagado(total);
+            // Aquí podrías actualizar cabecera si deseas reflejar el total en BD
             loadDetalles(cabecera.getIdCabecera());
-
             JOptionPane.showMessageDialog(this, "Detalle de nómina registrado correctamente.");
 
         } catch (Exception e) {
@@ -340,101 +349,143 @@ public class DetalleNomina extends javax.swing.JFrame {
     private void Buscar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Buscar_BTNActionPerformed
         // TODO add your handling code here:
         try {
-        // Pedir al usuario el ID de la cabecera de nómina
-        String idCabeceraStr = JOptionPane.showInputDialog(this, "Ingrese el ID de la cabecera de nómina a buscar:");
-        if (idCabeceraStr == null || idCabeceraStr.trim().isEmpty()) {
-            return;  // usuario canceló o no ingresó nada
+            // Pedir al usuario el ID de la cabecera de nómina
+            String idCabeceraStr = JOptionPane.showInputDialog(this, "Ingrese el ID de la cabecera de nómina a buscar:");
+            if (idCabeceraStr == null || idCabeceraStr.trim().isEmpty()) {
+                return;  // usuario canceló o no ingresó nada
+            }
+
+            Long idCabecera = Long.parseLong(idCabeceraStr);
+
+            // Buscar cabecera usando el JPA Controller
+            Cnomina cabecera = CnominaJpaController.findCnomina(idCabecera);
+
+            if (cabecera == null) {
+                JOptionPane.showMessageDialog(this, "No se encontró la cabecera con ID: " + idCabecera);
+                return;
+            }
+
+            // Mostrar info encontrada
+            // Cargar detalles en la tabla usando tu método
+            loadDetalles(idCabecera);
+
+        } catch (NumberFormatException nfe) {
+            JOptionPane.showMessageDialog(this, "ID inválido. Debe ser un número.");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error al buscar nómina: " + e.getMessage());
+            e.printStackTrace();
         }
-
-        Long idCabecera = Long.parseLong(idCabeceraStr);
-
-        // Buscar cabecera usando el JPA Controller
-        Cnomina cabecera = CnominaJpaController.findCnomina(idCabecera);
-
-        if (cabecera == null) {
-            JOptionPane.showMessageDialog(this, "No se encontró la cabecera con ID: " + idCabecera);
-            return;
-        }
-
-        // Mostrar info encontrada
-        // Cargar detalles en la tabla usando tu método
-        loadDetalles(idCabecera);
-
-    } catch (NumberFormatException nfe) {
-        JOptionPane.showMessageDialog(this, "ID inválido. Debe ser un número.");
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(this, "Error al buscar nómina: " + e.getMessage());
-        e.printStackTrace();
-    }
     }//GEN-LAST:event_Buscar_BTNActionPerformed
 
     private void Eliminar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Eliminar_BTNActionPerformed
         // TODO add your handling code here:
         try {
-        // Pedir ID de la cabecera a eliminar
-        String idCabeceraStr = JOptionPane.showInputDialog(this, "Ingrese el ID de la cabecera de nómina a eliminar:");
-        if (idCabeceraStr == null || idCabeceraStr.trim().isEmpty()) {
-            return;  // Canceló o no ingresó nada
+            // Pedir ID de la cabecera a eliminar
+            String idCabeceraStr = JOptionPane.showInputDialog(this, "Ingrese el ID de la cabecera de nómina a eliminar:");
+            if (idCabeceraStr == null || idCabeceraStr.trim().isEmpty()) {
+                return;  // Canceló o no ingresó nada
+            }
+
+            Long idCabecera = Long.parseLong(idCabeceraStr);
+
+            // Confirmar eliminación
+            int confirm = JOptionPane.showConfirmDialog(this,
+                    "¿Está seguro que desea eliminar la nómina con ID: " + idCabecera + "?",
+                    "Confirmar eliminación",
+                    JOptionPane.YES_NO_OPTION);
+
+            if (confirm != JOptionPane.YES_OPTION) {
+                return; // El usuario canceló
+            }
+
+            // Antes de eliminar la cabecera, eliminar detalles asociados si la relación no está en cascada.
+            Cnomina cabecera = CnominaJpaController.findCnomina(idCabecera);
+            if (cabecera == null) {
+                JOptionPane.showMessageDialog(this, "No se encontró la cabecera con ID: " + idCabecera);
+                return;
+            }
+
+            // Eliminar detalles asociados primero si no hay cascada
+            List<Dnomina> detalles = cabecera.getDnominaList();
+            for (Dnomina detalle : detalles) {
+                DnominaJpaController.destroy(detalle.getIdDetalle());
+            }
+
+            // Eliminar la cabecera
+            CnominaJpaController.destroy(idCabecera);
+
+            // Limpiar campos 
+            Num_Nomina_txt.setText("");
+            fecha_txt.setText("");
+            empleado_txt.setText("");
+            javax.swing.table.DefaultTableModel modelo = (javax.swing.table.DefaultTableModel) jTable1.getModel();
+            modelo.setRowCount(0);
+
+            JOptionPane.showMessageDialog(this, "Nómina eliminada correctamente.");
+
+        } catch (NumberFormatException nfe) {
+            JOptionPane.showMessageDialog(this, "ID inválido. Debe ser un número.");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error al eliminar nómina: " + e.getMessage());
+            e.printStackTrace();
         }
-
-        Long idCabecera = Long.parseLong(idCabeceraStr);
-
-        // Confirmar eliminación
-        int confirm = JOptionPane.showConfirmDialog(this,
-                "¿Está seguro que desea eliminar la nómina con ID: " + idCabecera + "?",
-                "Confirmar eliminación",
-                JOptionPane.YES_NO_OPTION);
-
-        if (confirm != JOptionPane.YES_OPTION) {
-            return; // El usuario canceló
-        }
-
-        // Antes de eliminar la cabecera, eliminar detalles asociados si la relación no está en cascada.
-        Cnomina cabecera = CnominaJpaController.findCnomina(idCabecera);
-        if (cabecera == null) {
-            JOptionPane.showMessageDialog(this, "No se encontró la cabecera con ID: " + idCabecera);
-            return;
-        }
-
-        // Eliminar detalles asociados primero si no hay cascada
-        List<Dnomina> detalles = cabecera.getDnominaList();
-        for (Dnomina detalle : detalles) {
-            DnominaJpaController.destroy(detalle.getIdDetalle());
-        }
-
-        // Eliminar la cabecera
-        CnominaJpaController.destroy(idCabecera);
-
-        // Limpiar campos 
-        Num_Nomina_txt.setText("");
-        fecha_txt.setText("");
-        empleado_txt.setText("");
-        javax.swing.table.DefaultTableModel modelo = (javax.swing.table.DefaultTableModel) jTable1.getModel();
-        modelo.setRowCount(0);
-
-        JOptionPane.showMessageDialog(this, "Nómina eliminada correctamente.");
-
-    } catch (NumberFormatException nfe) {
-        JOptionPane.showMessageDialog(this, "ID inválido. Debe ser un número.");
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(this, "Error al eliminar nómina: " + e.getMessage());
-        e.printStackTrace();
-    }
     }//GEN-LAST:event_Eliminar_BTNActionPerformed
 
     private void Modificar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Modificar_BTNActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_Modificar_BTNActionPerformed
-
-    private void Cargar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Cargar_BTNActionPerformed
-        // TODO add your handling code here:
         try {
-            Long id = Long.parseLong(Num_Nomina_txt.getText());
-            loadDetalles(id);
-        } catch (NumberFormatException e) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Ingrese un número válido de nómina.");
+            String idDetalleStr = JOptionPane.showInputDialog("Ingrese el ID del detalle a modificar:");
+            if (idDetalleStr == null || idDetalleStr.trim().isEmpty()) {
+                return;
+            }
+
+            Long idDetalle = Long.parseLong(idDetalleStr);
+
+            EntityManager em = emf.createEntityManager();
+            Dnomina detalleExistente = em.find(Dnomina.class, idDetalle);
+            em.close();
+
+            if (detalleExistente == null) {
+                JOptionPane.showMessageDialog(this, "Detalle no encontrado.");
+                return;
+            }
+
+            System.out.println("[LOG] Detalle encontrado: ID " + detalleExistente.getIdDetalle());
+
+            // Solicitar nuevos valores
+            String nuevoSeguroStr = JOptionPane.showInputDialog("Ingrese el nuevo valor del SEGURO:", detalleExistente.getSeguro());
+            String nuevoSueldoStr = JOptionPane.showInputDialog("Ingrese el nuevo SUELDO BASE:", detalleExistente.getSueldoBase());
+            String nuevoMotivoStr = JOptionPane.showInputDialog("Ingrese el nuevo ID del MOTIVO:", detalleExistente.getCodMotivo());
+
+            if (nuevoSeguroStr == null || nuevoSueldoStr == null || nuevoMotivoStr == null) {
+                return;
+            }
+
+            BigDecimal nuevoSeguro = new BigDecimal(nuevoSeguroStr);
+            BigDecimal nuevoSueldo = new BigDecimal(nuevoSueldoStr);
+            Long nuevoIdMotivo = Long.parseLong(nuevoMotivoStr);
+
+            MotivoIngresoEgreso nuevoMotivo = emf.createEntityManager().find(MotivoIngresoEgreso.class, nuevoIdMotivo);
+            if (nuevoMotivo == null) {
+                JOptionPane.showMessageDialog(this, "Motivo no encontrado.");
+                return;
+            }
+
+            // Modificar el detalle
+            detalleExistente.setSeguro(nuevoSeguro);
+            detalleExistente.setSueldoBase(nuevoSueldo);
+            detalleExistente.setCodMotivo(nuevoMotivo);
+
+            DnominaJpaController.edit(detalleExistente);
+
+            JOptionPane.showMessageDialog(this, "Detalle modificado correctamente.");
+            loadDetalles(detalleExistente.getIdCabecera().getIdCabecera());
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error al modificar el detalle: " + e.getMessage());
+            e.printStackTrace();
         }
-    }//GEN-LAST:event_Cargar_BTNActionPerformed
+    }//GEN-LAST:event_Modificar_BTNActionPerformed
 
     /**
      * @param args the command line arguments
@@ -477,7 +528,6 @@ public class DetalleNomina extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Agregar_BTN;
     private javax.swing.JButton Buscar_BTN;
-    private javax.swing.JButton Cargar_BTN;
     private javax.swing.JButton Eliminar_BTN;
     private javax.swing.JButton Modificar_BTN;
     private javax.swing.JTextField Num_Nomina_txt;

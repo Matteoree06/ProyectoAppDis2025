@@ -39,10 +39,6 @@ import javax.xml.bind.annotation.XmlTransient;
     , @NamedQuery(name = "Cnomina.findByTotalPagado", query = "SELECT c FROM Cnomina c WHERE c.totalPagado = :totalPagado")})
 public class Cnomina implements Serializable {
 
-    @JoinColumn(name = "ID_EMPLEADO", referencedColumnName = "ID_EMPLEADO")
-    @ManyToOne(optional = false)
-    private Empleado idEmpleado;
-
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
@@ -55,6 +51,9 @@ public class Cnomina implements Serializable {
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Column(name = "TOTAL_PAGADO")
     private BigDecimal totalPagado;
+    @JoinColumn(name = "ID_EMPLEADO", referencedColumnName = "ID_EMPLEADO")
+    @ManyToOne(optional = false)
+    private Empleado idEmpleado;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "idCabecera")
     private List<Dnomina> dnominaList;
 
@@ -94,6 +93,14 @@ public class Cnomina implements Serializable {
         this.totalPagado = totalPagado;
     }
 
+    public Empleado getIdEmpleado() {
+        return idEmpleado;
+    }
+
+    public void setIdEmpleado(Empleado idEmpleado) {
+        this.idEmpleado = idEmpleado;
+    }
+
     @XmlTransient
     public List<Dnomina> getDnominaList() {
         return dnominaList;
@@ -126,14 +133,6 @@ public class Cnomina implements Serializable {
     @Override
     public String toString() {
         return "Pack_persistencia.Cnomina[ idCabecera=" + idCabecera + " ]";
-    }
-
-    public Empleado getIdEmpleado() {
-        return idEmpleado;
-    }
-
-    public void setIdEmpleado(Empleado idEmpleado) {
-        this.idEmpleado = idEmpleado;
     }
     
 }

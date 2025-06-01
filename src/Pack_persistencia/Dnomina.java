@@ -33,10 +33,6 @@ import javax.xml.bind.annotation.XmlRootElement;
     , @NamedQuery(name = "Dnomina.findByTotalPagar", query = "SELECT d FROM Dnomina d WHERE d.totalPagar = :totalPagar")})
 public class Dnomina implements Serializable {
 
-    @JoinColumn(name = "COD_MOTIVO", referencedColumnName = "CODIGO")
-    @ManyToOne(optional = false)
-    private MotivoIngresoEgreso codMotivo;
-
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
@@ -53,6 +49,9 @@ public class Dnomina implements Serializable {
     @JoinColumn(name = "ID_CABECERA", referencedColumnName = "ID_CABECERA")
     @ManyToOne(optional = false)
     private Cnomina idCabecera;
+    @JoinColumn(name = "COD_MOTIVO", referencedColumnName = "CODIGO")
+    @ManyToOne(optional = false)
+    private MotivoIngresoEgreso codMotivo;
 
     public Dnomina() {
     }
@@ -106,6 +105,14 @@ public class Dnomina implements Serializable {
         this.idCabecera = idCabecera;
     }
 
+    public MotivoIngresoEgreso getCodMotivo() {
+        return codMotivo;
+    }
+
+    public void setCodMotivo(MotivoIngresoEgreso codMotivo) {
+        this.codMotivo = codMotivo;
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -129,14 +136,6 @@ public class Dnomina implements Serializable {
     @Override
     public String toString() {
         return "Pack_persistencia.Dnomina[ idDetalle=" + idDetalle + " ]";
-    }
-
-    public MotivoIngresoEgreso getCodMotivo() {
-        return codMotivo;
-    }
-
-    public void setCodMotivo(MotivoIngresoEgreso codMotivo) {
-        this.codMotivo = codMotivo;
     }
     
 }
