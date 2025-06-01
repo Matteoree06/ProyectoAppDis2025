@@ -9,16 +9,20 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
+import java.util.List;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -55,6 +59,8 @@ public class Empleado implements Serializable {
     @Basic(optional = false)
     @Column(name = "SUELDO")
     private BigInteger sueldo;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "idEmpleado")
+    private List<Cnomina> cnominaList;
 
     public Empleado() {
     }
@@ -109,6 +115,15 @@ public class Empleado implements Serializable {
 
     public void setSueldo(BigInteger sueldo) {
         this.sueldo = sueldo;
+    }
+
+    @XmlTransient
+    public List<Cnomina> getCnominaList() {
+        return cnominaList;
+    }
+
+    public void setCnominaList(List<Cnomina> cnominaList) {
+        this.cnominaList = cnominaList;
     }
 
     @Override

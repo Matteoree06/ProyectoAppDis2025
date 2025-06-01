@@ -5,17 +5,20 @@
  */
 package Pack_negocio;
 
+import Pack_negocio.exceptions.IllegalOrphanException;
 import Pack_negocio.exceptions.NonexistentEntityException;
 import Pack_negocio.exceptions.PreexistingEntityException;
-import Pack_persistencia.MotivoIngresoEgreso;
 import java.io.Serializable;
-import java.util.List;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import Pack_persistencia.Dnomina;
+import Pack_persistencia.MotivoIngresoEgreso;
+import java.util.ArrayList;
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 
 /**
  *
@@ -33,11 +36,29 @@ public class MotivoIngresoEgresoJpaController implements Serializable {
     }
 
     public void create(MotivoIngresoEgreso motivoIngresoEgreso) throws PreexistingEntityException, Exception {
+        if (motivoIngresoEgreso.getDnominaList() == null) {
+            motivoIngresoEgreso.setDnominaList(new ArrayList<Dnomina>());
+        }
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
+            List<Dnomina> attachedDnominaList = new ArrayList<Dnomina>();
+            for (Dnomina dnominaListDnominaToAttach : motivoIngresoEgreso.getDnominaList()) {
+                dnominaListDnominaToAttach = em.getReference(dnominaListDnominaToAttach.getClass(), dnominaListDnominaToAttach.getIdDetalle());
+                attachedDnominaList.add(dnominaListDnominaToAttach);
+            }
+            motivoIngresoEgreso.setDnominaList(attachedDnominaList);
             em.persist(motivoIngresoEgreso);
+            for (Dnomina dnominaListDnomina : motivoIngresoEgreso.getDnominaList()) {
+                MotivoIngresoEgreso oldCodMotivoOfDnominaListDnomina = dnominaListDnomina.getCodMotivo();
+                dnominaListDnomina.setCodMotivo(motivoIngresoEgreso);
+                dnominaListDnomina = em.merge(dnominaListDnomina);
+                if (oldCodMotivoOfDnominaListDnomina != null) {
+                    oldCodMotivoOfDnominaListDnomina.getDnominaList().remove(dnominaListDnomina);
+                    oldCodMotivoOfDnominaListDnomina = em.merge(oldCodMotivoOfDnominaListDnomina);
+                }
+            }
             em.getTransaction().commit();
         } catch (Exception ex) {
             if (findMotivoIngresoEgreso(motivoIngresoEgreso.getCodigo()) != null) {
@@ -51,12 +72,45 @@ public class MotivoIngresoEgresoJpaController implements Serializable {
         }
     }
 
-    public void edit(MotivoIngresoEgreso motivoIngresoEgreso) throws NonexistentEntityException, Exception {
+    public void edit(MotivoIngresoEgreso motivoIngresoEgreso) throws IllegalOrphanException, NonexistentEntityException, Exception {
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
+            MotivoIngresoEgreso persistentMotivoIngresoEgreso = em.find(MotivoIngresoEgreso.class, motivoIngresoEgreso.getCodigo());
+            List<Dnomina> dnominaListOld = persistentMotivoIngresoEgreso.getDnominaList();
+            List<Dnomina> dnominaListNew = motivoIngresoEgreso.getDnominaList();
+            List<String> illegalOrphanMessages = null;
+            for (Dnomina dnominaListOldDnomina : dnominaListOld) {
+                if (!dnominaListNew.contains(dnominaListOldDnomina)) {
+                    if (illegalOrphanMessages == null) {
+                        illegalOrphanMessages = new ArrayList<String>();
+                    }
+                    illegalOrphanMessages.add("You must retain Dnomina " + dnominaListOldDnomina + " since its codMotivo field is not nullable.");
+                }
+            }
+            if (illegalOrphanMessages != null) {
+                throw new IllegalOrphanException(illegalOrphanMessages);
+            }
+            List<Dnomina> attachedDnominaListNew = new ArrayList<Dnomina>();
+            for (Dnomina dnominaListNewDnominaToAttach : dnominaListNew) {
+                dnominaListNewDnominaToAttach = em.getReference(dnominaListNewDnominaToAttach.getClass(), dnominaListNewDnominaToAttach.getIdDetalle());
+                attachedDnominaListNew.add(dnominaListNewDnominaToAttach);
+            }
+            dnominaListNew = attachedDnominaListNew;
+            motivoIngresoEgreso.setDnominaList(dnominaListNew);
             motivoIngresoEgreso = em.merge(motivoIngresoEgreso);
+            for (Dnomina dnominaListNewDnomina : dnominaListNew) {
+                if (!dnominaListOld.contains(dnominaListNewDnomina)) {
+                    MotivoIngresoEgreso oldCodMotivoOfDnominaListNewDnomina = dnominaListNewDnomina.getCodMotivo();
+                    dnominaListNewDnomina.setCodMotivo(motivoIngresoEgreso);
+                    dnominaListNewDnomina = em.merge(dnominaListNewDnomina);
+                    if (oldCodMotivoOfDnominaListNewDnomina != null && !oldCodMotivoOfDnominaListNewDnomina.equals(motivoIngresoEgreso)) {
+                        oldCodMotivoOfDnominaListNewDnomina.getDnominaList().remove(dnominaListNewDnomina);
+                        oldCodMotivoOfDnominaListNewDnomina = em.merge(oldCodMotivoOfDnominaListNewDnomina);
+                    }
+                }
+            }
             em.getTransaction().commit();
         } catch (Exception ex) {
             String msg = ex.getLocalizedMessage();
@@ -74,7 +128,7 @@ public class MotivoIngresoEgresoJpaController implements Serializable {
         }
     }
 
-    public void destroy(Long id) throws NonexistentEntityException {
+    public void destroy(Long id) throws IllegalOrphanException, NonexistentEntityException {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -85,6 +139,17 @@ public class MotivoIngresoEgresoJpaController implements Serializable {
                 motivoIngresoEgreso.getCodigo();
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The motivoIngresoEgreso with id " + id + " no longer exists.", enfe);
+            }
+            List<String> illegalOrphanMessages = null;
+            List<Dnomina> dnominaListOrphanCheck = motivoIngresoEgreso.getDnominaList();
+            for (Dnomina dnominaListOrphanCheckDnomina : dnominaListOrphanCheck) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("This MotivoIngresoEgreso (" + motivoIngresoEgreso + ") cannot be destroyed since the Dnomina " + dnominaListOrphanCheckDnomina + " in its dnominaList field has a non-nullable codMotivo field.");
+            }
+            if (illegalOrphanMessages != null) {
+                throw new IllegalOrphanException(illegalOrphanMessages);
             }
             em.remove(motivoIngresoEgreso);
             em.getTransaction().commit();

@@ -6,14 +6,18 @@
 package Pack_persistencia;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -39,6 +43,8 @@ public class MotivoIngresoEgreso implements Serializable {
     private String nombre;
     @Column(name = "TIPO")
     private String tipo;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "codMotivo")
+    private List<Dnomina> dnominaList;
 
     public MotivoIngresoEgreso() {
     }
@@ -74,6 +80,15 @@ public class MotivoIngresoEgreso implements Serializable {
 
     public void setTipo(String tipo) {
         this.tipo = tipo;
+    }
+
+    @XmlTransient
+    public List<Dnomina> getDnominaList() {
+        return dnominaList;
+    }
+
+    public void setDnominaList(List<Dnomina> dnominaList) {
+        this.dnominaList = dnominaList;
     }
 
     @Override
