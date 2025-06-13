@@ -33,6 +33,9 @@ import javax.xml.bind.annotation.XmlTransient;
     , @NamedQuery(name = "MotivoIngresoEgreso.findByTipo", query = "SELECT m FROM MotivoIngresoEgreso m WHERE m.tipo = :tipo")})
 public class MotivoIngresoEgreso implements Serializable {
 
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "idMotivo")
+    private List<ReporteNomina> reporteNominaList;
+
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
@@ -114,6 +117,15 @@ public class MotivoIngresoEgreso implements Serializable {
     @Override
     public String toString() {
         return "Pack_persistencia.MotivoIngresoEgreso[ codigo=" + codigo + " ]";
+    }
+
+    @XmlTransient
+    public List<ReporteNomina> getReporteNominaList() {
+        return reporteNominaList;
+    }
+
+    public void setReporteNominaList(List<ReporteNomina> reporteNominaList) {
+        this.reporteNominaList = reporteNominaList;
     }
     
 }

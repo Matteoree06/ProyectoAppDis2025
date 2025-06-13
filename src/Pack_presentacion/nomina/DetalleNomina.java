@@ -57,7 +57,7 @@ public class DetalleNomina extends javax.swing.JFrame {
             fecha_txt.setText(String.valueOf(cabecera.getFechaPago()));
             empleado_txt.setText(String.valueOf(cabecera.getIdEmpleado().getNombre()));
 
-            // Aquí asumimos que cada detalle tiene un motivo y que se accede desde el detalle (relación ManyToOne)
+            // Cada detalle tiene un motivo y se accede desde el detalle
             List<Dnomina> detalles = cabecera.getDnominaList();
 
             javax.swing.table.DefaultTableModel modelo = (javax.swing.table.DefaultTableModel) jTable1.getModel();
@@ -261,7 +261,6 @@ public class DetalleNomina extends javax.swing.JFrame {
             Cnomina cabecera = new Cnomina();
             cabecera.setFechaPago(fechaPago);
             cabecera.setIdEmpleado(empleado);
-            //cabecera.setTotalPagado(BigDecimal.ZERO);
 
             CnominaJpaController.create(cabecera);
 
@@ -334,9 +333,9 @@ public class DetalleNomina extends javax.swing.JFrame {
 
             System.out.println("[LOG] Detalle creado con ID: " + detalle.getIdDetalle());
             System.out.println("[LOG] Detalle creado exitosamente para la cabecera ID: " + cabecera.getIdCabecera());
-
+            
+                
             //cabecera.setTotalPagado(total);
-            // Aquí podrías actualizar cabecera si deseas reflejar el total en BD
             loadDetalles(cabecera.getIdCabecera());
             JOptionPane.showMessageDialog(this, "Detalle de nómina registrado correctamente.");
 
@@ -365,15 +364,16 @@ public class DetalleNomina extends javax.swing.JFrame {
                 return;
             }
 
-            // Mostrar info encontrada
-            // Cargar detalles en la tabla usando tu método
+            // Cargar detalles en la tabla 
             loadDetalles(idCabecera);
 
         } catch (NumberFormatException nfe) {
             JOptionPane.showMessageDialog(this, "ID inválido. Debe ser un número.");
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error al buscar nómina: " + e.getMessage());
             e.printStackTrace();
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "Error al cargar datos:\n" + e.toString(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_Buscar_BTNActionPerformed
 

@@ -8,7 +8,9 @@ package Pack_persistencia;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -16,10 +18,12 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -34,6 +38,9 @@ import javax.xml.bind.annotation.XmlRootElement;
     , @NamedQuery(name = "ValoresPagar.findByFechaGeneracion", query = "SELECT v FROM ValoresPagar v WHERE v.fechaGeneracion = :fechaGeneracion")
     , @NamedQuery(name = "ValoresPagar.findByTotal", query = "SELECT v FROM ValoresPagar v WHERE v.total = :total")})
 public class ValoresPagar implements Serializable {
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "idValor")
+    private List<ReporteNomina> reporteNominaList;
 
     @JoinColumn(name = "ID_DETALLE", referencedColumnName = "ID_DETALLE")
     @ManyToOne
@@ -130,6 +137,15 @@ public class ValoresPagar implements Serializable {
 
     public void setIdEmpleado(Empleado idEmpleado) {
         this.idEmpleado = idEmpleado;
+    }
+
+    @XmlTransient
+    public List<ReporteNomina> getReporteNominaList() {
+        return reporteNominaList;
+    }
+
+    public void setReporteNominaList(List<ReporteNomina> reporteNominaList) {
+        this.reporteNominaList = reporteNominaList;
     }
     
 }

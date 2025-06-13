@@ -7,13 +7,19 @@ package Pack_presentacion.nomina;
 
 import Pack_negocio.DnominaJpaController;
 import Pack_negocio.EmpleadoJpaController;
+import Pack_negocio.ValoresPagarJpaController;
 import Pack_persistencia.Dnomina;
 import Pack_persistencia.Empleado;
+import Pack_persistencia.ValoresPagar;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
 
@@ -22,8 +28,10 @@ import javax.swing.table.DefaultTableModel;
  * @author HP
  */
 public class Valores_pagar extends javax.swing.JFrame {
+
     private DnominaJpaController DnominaJpaController;
     private EmpleadoJpaController EmpleadoJpaController;
+    private ValoresPagarJpaController ValoresPagarJpaController;
     private EntityManagerFactory emf;
 
     /**
@@ -36,9 +44,10 @@ public class Valores_pagar extends javax.swing.JFrame {
         emf = Persistence.createEntityManagerFactory("ProyectoAppDistiPU");
         DnominaJpaController = new DnominaJpaController(emf);
         EmpleadoJpaController = new EmpleadoJpaController(emf);
+        ValoresPagarJpaController = new ValoresPagarJpaController(emf);
         loadValores();
     }
-    
+
     private void loadValores() {
         List<Empleado> empleados = EmpleadoJpaController.findEmpleadoEntities();
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
@@ -51,7 +60,7 @@ public class Valores_pagar extends javax.swing.JFrame {
                 if (detalle != null && detalle.getTotalPagar() != null) {
                     model.addRow(new Object[]{
                         empleado.getNombre(),
-                        detalle.getTotalPagar(), 
+                        detalle.getTotalPagar(),
                         valor.getFechaGeneracion()
                     });
                 }
@@ -199,18 +208,295 @@ public class Valores_pagar extends javax.swing.JFrame {
 
     private void Agregar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Agregar_BTNActionPerformed
         // TODO add your handling code here:
+        try {
+            // Seleccionar un empleado
+            List<Empleado> empleados = EmpleadoJpaController.findEmpleadoEntities();
+            String[] nombres = empleados.stream().map(Empleado::getNombre).toArray(String[]::new);
+            String nombreSeleccionado = (String) javax.swing.JOptionPane.showInputDialog(this,
+                    "Seleccione un empleado", "Agregar Valor",
+                    javax.swing.JOptionPane.PLAIN_MESSAGE, null, nombres, nombres[0]);
+
+            if (nombreSeleccionado == null) {
+                return; // Cancelado
+            }
+            Empleado empleadoSeleccionado = empleados.stream()
+                    .filter(e -> e.getNombre().equals(nombreSeleccionado))
+                    .findFirst().orElse(null);
+
+            if (empleadoSeleccionado == null) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Empleado no encontrado.");
+                return;
+            }
+
+            // Seleccionar un Dnomina
+            List<Dnomina> dnominas = DnominaJpaController.findDnominaEntities();
+            String[] detalles = dnominas.stream()
+                    .map(d -> "ID " + d.getIdDetalle() + " - Total: " + d.getTotalPagar())
+                    .toArray(String[]::new);
+
+            String detalleSeleccionado = (String) javax.swing.JOptionPane.showInputDialog(this,
+                    "Seleccione un detalle de nómina", "Agregar Valor",
+                    javax.swing.JOptionPane.PLAIN_MESSAGE, null, detalles, detalles[0]);
+
+            if (detalleSeleccionado == null) {
+                return; // Cancelado
+            }
+            Long idDetalleSeleccionado = Long.parseLong(detalleSeleccionado.split(" ")[1]);
+            Dnomina dnominaSeleccionada = dnominas.stream()
+                    .filter(d -> d.getIdDetalle().equals(idDetalleSeleccionado))
+                    .findFirst().orElse(null);
+
+            if (dnominaSeleccionada == null) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Detalle de nómina no encontrado.");
+                return;
+            }
+
+            // Crear nuevo objeto ValoresPagar
+            ValoresPagar nuevoValor = new ValoresPagar();
+            nuevoValor.setIdValor(null); 
+            nuevoValor.setIdEmpleado(empleadoSeleccionado);
+            nuevoValor.setIdDetalle(dnominaSeleccionada);
+            nuevoValor.setFechaGeneracion(new java.util.Date());
+            nuevoValor.setTotal(dnominaSeleccionada.getTotalPagar());
+
+            ValoresPagarJpaController.create(nuevoValor);
+
+            javax.swing.JOptionPane.showMessageDialog(this, "Valor agregado exitosamente.");
+            loadValores(); // refrescar la tabla
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            javax.swing.JOptionPane.showMessageDialog(this, "Error al agregar valor: " + ex.getMessage());
+        }
     }//GEN-LAST:event_Agregar_BTNActionPerformed
 
     private void Buscar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Buscar_BTNActionPerformed
         // TODO add your handling code here:
+        try {
+            List<Empleado> empleados = EmpleadoJpaController.findEmpleadoEntities();
+            if (empleados.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "No hay empleados registrados.");
+                return;
+            }
+
+            String[] nombres = empleados.stream().map(Empleado::getNombre).toArray(String[]::new);
+            String nombreSeleccionado = (String) JOptionPane.showInputDialog(this,
+                    "Seleccione un empleado para buscar sus valores",
+                    "Buscar por Empleado",
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    nombres,
+                    nombres[0]);
+
+            if (nombreSeleccionado == null) {
+                return; // cancelado
+            }
+            Empleado empleadoSeleccionado = empleados.stream()
+                    .filter(e -> e.getNombre().equals(nombreSeleccionado))
+                    .findFirst().orElse(null);
+
+            if (empleadoSeleccionado == null) {
+                JOptionPane.showMessageDialog(this, "Empleado no encontrado.");
+                return;
+            }
+
+            List<ValoresPagar> valores = empleadoSeleccionado.getValoresPagarList();
+            if (valores.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Este empleado no tiene valores registrados.");
+                return;
+            }
+
+            // Mostrar los valores en la tabla
+            DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+            model.setRowCount(0); // Limpiar tabla
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+            for (ValoresPagar valor : valores) {
+                Dnomina detalle = valor.getIdDetalle();
+                if (detalle != null && detalle.getTotalPagar() != null) {
+                    model.addRow(new Object[]{
+                        empleadoSeleccionado.getNombre(),
+                        detalle.getTotalPagar(),
+                        sdf.format(valor.getFechaGeneracion())
+                    });
+                }
+            }
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error al buscar valores: " + ex.getMessage());
+        }
     }//GEN-LAST:event_Buscar_BTNActionPerformed
 
     private void Modificar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Modificar_BTNActionPerformed
         // TODO add your handling code here:
+        try {
+            //Seleccionar el empleado
+            List<Empleado> empleados = EmpleadoJpaController.findEmpleadoEntities();
+            String[] nombres = empleados.stream().map(Empleado::getNombre).toArray(String[]::new);
+
+            String nombreSeleccionado = (String) javax.swing.JOptionPane.showInputDialog(this,
+                    "Seleccione el empleado que desea modificar", "Modificar Valor",
+                    javax.swing.JOptionPane.PLAIN_MESSAGE, null, nombres, nombres[0]);
+
+            if (nombreSeleccionado == null) {
+                return; // cancelado
+            }
+
+            Empleado empleadoSeleccionado = empleados.stream()
+                    .filter(e -> e.getNombre().equals(nombreSeleccionado))
+                    .findFirst().orElse(null);
+
+            if (empleadoSeleccionado == null) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Empleado no encontrado.");
+                return;
+            }
+
+            //Seleccionar el valor a modificar
+            List<ValoresPagar> listaValores = empleadoSeleccionado.getValoresPagarList();
+            if (listaValores.isEmpty()) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Este empleado no tiene valores registrados.");
+                return;
+            }
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+            // Mapa para vincular texto mostrado con el objeto ValoresPagar
+            Map<String, ValoresPagar> opcionesMap = new LinkedHashMap<>();
+            for (ValoresPagar v : listaValores) {
+                String texto = "Fecha: " + sdf.format(v.getFechaGeneracion()) + " | Total: " + v.getTotal();
+                opcionesMap.put(texto, v);
+            }
+
+            String[] opciones = opcionesMap.keySet().toArray(new String[0]);
+
+            String seleccion = (String) javax.swing.JOptionPane.showInputDialog(this,
+                    "Seleccione el valor que desea modificar", "Modificar Valor",
+                    javax.swing.JOptionPane.PLAIN_MESSAGE, null, opciones, opciones[0]);
+
+            if (seleccion == null) {
+                return;
+            }
+
+            ValoresPagar valorOriginal = opcionesMap.get(seleccion);
+
+            //Seleccionar nuevo detalle de nómina
+            List<Dnomina> dnominas = DnominaJpaController.findDnominaEntities();
+            String[] opcionesD = dnominas.stream()
+                    .map(d -> "ID " + d.getIdDetalle() + " - Total: " + d.getTotalPagar())
+                    .toArray(String[]::new);
+
+            String seleccionD = (String) javax.swing.JOptionPane.showInputDialog(this,
+                    "Seleccione el nuevo detalle de nómina", "Modificar Valor",
+                    javax.swing.JOptionPane.PLAIN_MESSAGE, null, opcionesD, opcionesD[0]);
+
+            if (seleccionD == null) {
+                return;
+            }
+
+            Long idDetalleNuevo = Long.parseLong(seleccionD.split(" ")[1]);
+            Dnomina nuevaDnomina = dnominas.stream()
+                    .filter(d -> d.getIdDetalle().equals(idDetalleNuevo))
+                    .findFirst().orElse(null);
+
+            if (nuevaDnomina == null) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Detalle de nómina no encontrado.");
+                return;
+            }
+
+            // Actualizar el objeto
+            valorOriginal.setIdDetalle(nuevaDnomina);
+            valorOriginal.setTotal(nuevaDnomina.getTotalPagar());
+            ValoresPagarJpaController.edit(valorOriginal);
+
+            javax.swing.JOptionPane.showMessageDialog(this, "Valor modificado exitosamente.");
+            loadValores();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            javax.swing.JOptionPane.showMessageDialog(this, "Error al modificar valor: " + ex.getMessage());
+        }
     }//GEN-LAST:event_Modificar_BTNActionPerformed
 
     private void Eliminar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Eliminar_BTNActionPerformed
         // TODO add your handling code here:
+        try {
+            List<Empleado> empleados = EmpleadoJpaController.findEmpleadoEntities();
+            if (empleados.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "No hay empleados registrados.");
+                return;
+            }
+
+            //Seleccionar el empleado
+            String[] nombres = empleados.stream().map(Empleado::getNombre).toArray(String[]::new);
+            String nombreSeleccionado = (String) JOptionPane.showInputDialog(this,
+                    "Seleccione el empleado", "Eliminar Valor",
+                    JOptionPane.PLAIN_MESSAGE, null, nombres, nombres[0]);
+
+            if (nombreSeleccionado == null) {
+                return;
+            }
+
+            Empleado empleadoSeleccionado = empleados.stream()
+                    .filter(e -> e.getNombre().equals(nombreSeleccionado))
+                    .findFirst().orElse(null);
+
+            if (empleadoSeleccionado == null) {
+                JOptionPane.showMessageDialog(this, "Empleado no encontrado.");
+                return;
+            }
+
+            //Obtener valores de ese empleado
+            List<ValoresPagar> valores = empleadoSeleccionado.getValoresPagarList();
+            if (valores.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Este empleado no tiene valores registrados.");
+                return;
+            }
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            Map<String, ValoresPagar> opcionesMap = new LinkedHashMap<>();
+            for (ValoresPagar v : valores) {
+                String texto = "Fecha: " + sdf.format(v.getFechaGeneracion()) + " | Total: " + v.getTotal();
+                opcionesMap.put(texto, v);
+            }
+
+            String[] opciones = opcionesMap.keySet().toArray(new String[0]);
+            String seleccion = (String) JOptionPane.showInputDialog(this,
+                    "Seleccione el valor que desea eliminar", "Eliminar Valor",
+                    JOptionPane.PLAIN_MESSAGE, null, opciones, opciones[0]);
+
+            if (seleccion == null) {
+                return;
+            }
+
+            ValoresPagar valorAEliminar = opcionesMap.get(seleccion);
+
+            //Confirmar eliminación
+            int confirmacion = JOptionPane.showConfirmDialog(this,
+                    "¿Está seguro que desea eliminar este valor?\n" + seleccion,
+                    "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
+
+            if (confirmacion != JOptionPane.YES_OPTION) {
+                return;
+            }
+
+            //Eliminar
+            Long id = valorAEliminar.getIdValor();
+
+            if (id == null) {
+                JOptionPane.showMessageDialog(this, "Error: el valor seleccionado no tiene un ID válido.");
+                return;
+            }
+
+            ValoresPagarJpaController.destroy(id);
+
+            JOptionPane.showMessageDialog(this, "Valor eliminado exitosamente.");
+            loadValores();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error al eliminar valor: " + ex.getMessage());
+        }
     }//GEN-LAST:event_Eliminar_BTNActionPerformed
 
     private void Imprimir_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Imprimir_BTNActionPerformed
