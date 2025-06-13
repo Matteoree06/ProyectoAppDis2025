@@ -214,7 +214,6 @@ public class EmpleadoF extends javax.swing.JFrame {
             // Insertar en BD
             EmpleadoJpaController.create(nuevoEmpleado);
 
-            // Mensaje de éxito
             JOptionPane.showMessageDialog(this, "Empleado agregado correctamente.");
 
             // Recargar tabla 
@@ -294,7 +293,7 @@ public class EmpleadoF extends javax.swing.JFrame {
                     // Elimina el empleado
                     EmpleadoJpaController.destroy(id);
 
-                    // Actualiza la tabla si tienes este método
+                    // Actualiza la tabla 
                     TablaEmpleado();
                     JOptionPane.showMessageDialog(this, "Empleado eliminado correctamente.");
                 }
@@ -347,13 +346,13 @@ public class EmpleadoF extends javax.swing.JFrame {
                 // Asigna los nuevos valores
                 empleado.setCedula(nuevaCedula);
                 empleado.setNombre(nuevoNombre);
-                empleado.setIngreso(new Date()); // <-- Fecha actual automáticamente
+                empleado.setIngreso(new Date()); //Fecha actual automáticamente
                 empleado.setSueldo(nuevoSueldo);
 
                 // Guarda los cambios
                 EmpleadoJpaController.edit(empleado);
 
-                TablaEmpleado(); // Refresca la vista si tienes este método
+                TablaEmpleado(); // Refresca 
                 JOptionPane.showMessageDialog(this, "Empleado modificado correctamente.");
             } else {
                 JOptionPane.showMessageDialog(this, "Empleado no encontrado.");

@@ -17,6 +17,7 @@ import Pack_persistencia.Dnomina;
 import Pack_persistencia.MotivoIngresoEgreso;
 import java.util.ArrayList;
 import java.util.List;
+import Pack_persistencia.ReporteNomina;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
@@ -39,6 +40,9 @@ public class MotivoIngresoEgresoJpaController implements Serializable {
         if (motivoIngresoEgreso.getDnominaList() == null) {
             motivoIngresoEgreso.setDnominaList(new ArrayList<Dnomina>());
         }
+        if (motivoIngresoEgreso.getReporteNominaList() == null) {
+            motivoIngresoEgreso.setReporteNominaList(new ArrayList<ReporteNomina>());
+        }
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -49,6 +53,12 @@ public class MotivoIngresoEgresoJpaController implements Serializable {
                 attachedDnominaList.add(dnominaListDnominaToAttach);
             }
             motivoIngresoEgreso.setDnominaList(attachedDnominaList);
+            List<ReporteNomina> attachedReporteNominaList = new ArrayList<ReporteNomina>();
+            for (ReporteNomina reporteNominaListReporteNominaToAttach : motivoIngresoEgreso.getReporteNominaList()) {
+                reporteNominaListReporteNominaToAttach = em.getReference(reporteNominaListReporteNominaToAttach.getClass(), reporteNominaListReporteNominaToAttach.getIdReporte());
+                attachedReporteNominaList.add(reporteNominaListReporteNominaToAttach);
+            }
+            motivoIngresoEgreso.setReporteNominaList(attachedReporteNominaList);
             em.persist(motivoIngresoEgreso);
             for (Dnomina dnominaListDnomina : motivoIngresoEgreso.getDnominaList()) {
                 MotivoIngresoEgreso oldCodMotivoOfDnominaListDnomina = dnominaListDnomina.getCodMotivo();
@@ -57,6 +67,15 @@ public class MotivoIngresoEgresoJpaController implements Serializable {
                 if (oldCodMotivoOfDnominaListDnomina != null) {
                     oldCodMotivoOfDnominaListDnomina.getDnominaList().remove(dnominaListDnomina);
                     oldCodMotivoOfDnominaListDnomina = em.merge(oldCodMotivoOfDnominaListDnomina);
+                }
+            }
+            for (ReporteNomina reporteNominaListReporteNomina : motivoIngresoEgreso.getReporteNominaList()) {
+                MotivoIngresoEgreso oldIdMotivoOfReporteNominaListReporteNomina = reporteNominaListReporteNomina.getIdMotivo();
+                reporteNominaListReporteNomina.setIdMotivo(motivoIngresoEgreso);
+                reporteNominaListReporteNomina = em.merge(reporteNominaListReporteNomina);
+                if (oldIdMotivoOfReporteNominaListReporteNomina != null) {
+                    oldIdMotivoOfReporteNominaListReporteNomina.getReporteNominaList().remove(reporteNominaListReporteNomina);
+                    oldIdMotivoOfReporteNominaListReporteNomina = em.merge(oldIdMotivoOfReporteNominaListReporteNomina);
                 }
             }
             em.getTransaction().commit();
@@ -80,6 +99,8 @@ public class MotivoIngresoEgresoJpaController implements Serializable {
             MotivoIngresoEgreso persistentMotivoIngresoEgreso = em.find(MotivoIngresoEgreso.class, motivoIngresoEgreso.getCodigo());
             List<Dnomina> dnominaListOld = persistentMotivoIngresoEgreso.getDnominaList();
             List<Dnomina> dnominaListNew = motivoIngresoEgreso.getDnominaList();
+            List<ReporteNomina> reporteNominaListOld = persistentMotivoIngresoEgreso.getReporteNominaList();
+            List<ReporteNomina> reporteNominaListNew = motivoIngresoEgreso.getReporteNominaList();
             List<String> illegalOrphanMessages = null;
             for (Dnomina dnominaListOldDnomina : dnominaListOld) {
                 if (!dnominaListNew.contains(dnominaListOldDnomina)) {
@@ -87,6 +108,14 @@ public class MotivoIngresoEgresoJpaController implements Serializable {
                         illegalOrphanMessages = new ArrayList<String>();
                     }
                     illegalOrphanMessages.add("You must retain Dnomina " + dnominaListOldDnomina + " since its codMotivo field is not nullable.");
+                }
+            }
+            for (ReporteNomina reporteNominaListOldReporteNomina : reporteNominaListOld) {
+                if (!reporteNominaListNew.contains(reporteNominaListOldReporteNomina)) {
+                    if (illegalOrphanMessages == null) {
+                        illegalOrphanMessages = new ArrayList<String>();
+                    }
+                    illegalOrphanMessages.add("You must retain ReporteNomina " + reporteNominaListOldReporteNomina + " since its idMotivo field is not nullable.");
                 }
             }
             if (illegalOrphanMessages != null) {
@@ -99,6 +128,13 @@ public class MotivoIngresoEgresoJpaController implements Serializable {
             }
             dnominaListNew = attachedDnominaListNew;
             motivoIngresoEgreso.setDnominaList(dnominaListNew);
+            List<ReporteNomina> attachedReporteNominaListNew = new ArrayList<ReporteNomina>();
+            for (ReporteNomina reporteNominaListNewReporteNominaToAttach : reporteNominaListNew) {
+                reporteNominaListNewReporteNominaToAttach = em.getReference(reporteNominaListNewReporteNominaToAttach.getClass(), reporteNominaListNewReporteNominaToAttach.getIdReporte());
+                attachedReporteNominaListNew.add(reporteNominaListNewReporteNominaToAttach);
+            }
+            reporteNominaListNew = attachedReporteNominaListNew;
+            motivoIngresoEgreso.setReporteNominaList(reporteNominaListNew);
             motivoIngresoEgreso = em.merge(motivoIngresoEgreso);
             for (Dnomina dnominaListNewDnomina : dnominaListNew) {
                 if (!dnominaListOld.contains(dnominaListNewDnomina)) {
@@ -108,6 +144,17 @@ public class MotivoIngresoEgresoJpaController implements Serializable {
                     if (oldCodMotivoOfDnominaListNewDnomina != null && !oldCodMotivoOfDnominaListNewDnomina.equals(motivoIngresoEgreso)) {
                         oldCodMotivoOfDnominaListNewDnomina.getDnominaList().remove(dnominaListNewDnomina);
                         oldCodMotivoOfDnominaListNewDnomina = em.merge(oldCodMotivoOfDnominaListNewDnomina);
+                    }
+                }
+            }
+            for (ReporteNomina reporteNominaListNewReporteNomina : reporteNominaListNew) {
+                if (!reporteNominaListOld.contains(reporteNominaListNewReporteNomina)) {
+                    MotivoIngresoEgreso oldIdMotivoOfReporteNominaListNewReporteNomina = reporteNominaListNewReporteNomina.getIdMotivo();
+                    reporteNominaListNewReporteNomina.setIdMotivo(motivoIngresoEgreso);
+                    reporteNominaListNewReporteNomina = em.merge(reporteNominaListNewReporteNomina);
+                    if (oldIdMotivoOfReporteNominaListNewReporteNomina != null && !oldIdMotivoOfReporteNominaListNewReporteNomina.equals(motivoIngresoEgreso)) {
+                        oldIdMotivoOfReporteNominaListNewReporteNomina.getReporteNominaList().remove(reporteNominaListNewReporteNomina);
+                        oldIdMotivoOfReporteNominaListNewReporteNomina = em.merge(oldIdMotivoOfReporteNominaListNewReporteNomina);
                     }
                 }
             }
@@ -147,6 +194,13 @@ public class MotivoIngresoEgresoJpaController implements Serializable {
                     illegalOrphanMessages = new ArrayList<String>();
                 }
                 illegalOrphanMessages.add("This MotivoIngresoEgreso (" + motivoIngresoEgreso + ") cannot be destroyed since the Dnomina " + dnominaListOrphanCheckDnomina + " in its dnominaList field has a non-nullable codMotivo field.");
+            }
+            List<ReporteNomina> reporteNominaListOrphanCheck = motivoIngresoEgreso.getReporteNominaList();
+            for (ReporteNomina reporteNominaListOrphanCheckReporteNomina : reporteNominaListOrphanCheck) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("This MotivoIngresoEgreso (" + motivoIngresoEgreso + ") cannot be destroyed since the ReporteNomina " + reporteNominaListOrphanCheckReporteNomina + " in its reporteNominaList field has a non-nullable idMotivo field.");
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);

@@ -18,6 +18,7 @@ import Pack_persistencia.Empleado;
 import java.util.ArrayList;
 import java.util.List;
 import Pack_persistencia.ValoresPagar;
+import Pack_persistencia.ReporteNomina;
 import java.math.BigDecimal;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -44,6 +45,9 @@ public class EmpleadoJpaController implements Serializable {
         if (empleado.getValoresPagarList() == null) {
             empleado.setValoresPagarList(new ArrayList<ValoresPagar>());
         }
+        if (empleado.getReporteNominaList() == null) {
+            empleado.setReporteNominaList(new ArrayList<ReporteNomina>());
+        }
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -60,6 +64,12 @@ public class EmpleadoJpaController implements Serializable {
                 attachedValoresPagarList.add(valoresPagarListValoresPagarToAttach);
             }
             empleado.setValoresPagarList(attachedValoresPagarList);
+            List<ReporteNomina> attachedReporteNominaList = new ArrayList<ReporteNomina>();
+            for (ReporteNomina reporteNominaListReporteNominaToAttach : empleado.getReporteNominaList()) {
+                reporteNominaListReporteNominaToAttach = em.getReference(reporteNominaListReporteNominaToAttach.getClass(), reporteNominaListReporteNominaToAttach.getIdReporte());
+                attachedReporteNominaList.add(reporteNominaListReporteNominaToAttach);
+            }
+            empleado.setReporteNominaList(attachedReporteNominaList);
             em.persist(empleado);
             for (Cnomina cnominaListCnomina : empleado.getCnominaList()) {
                 Empleado oldIdEmpleadoOfCnominaListCnomina = cnominaListCnomina.getIdEmpleado();
@@ -77,6 +87,15 @@ public class EmpleadoJpaController implements Serializable {
                 if (oldIdEmpleadoOfValoresPagarListValoresPagar != null) {
                     oldIdEmpleadoOfValoresPagarListValoresPagar.getValoresPagarList().remove(valoresPagarListValoresPagar);
                     oldIdEmpleadoOfValoresPagarListValoresPagar = em.merge(oldIdEmpleadoOfValoresPagarListValoresPagar);
+                }
+            }
+            for (ReporteNomina reporteNominaListReporteNomina : empleado.getReporteNominaList()) {
+                Empleado oldIdEmpleadoOfReporteNominaListReporteNomina = reporteNominaListReporteNomina.getIdEmpleado();
+                reporteNominaListReporteNomina.setIdEmpleado(empleado);
+                reporteNominaListReporteNomina = em.merge(reporteNominaListReporteNomina);
+                if (oldIdEmpleadoOfReporteNominaListReporteNomina != null) {
+                    oldIdEmpleadoOfReporteNominaListReporteNomina.getReporteNominaList().remove(reporteNominaListReporteNomina);
+                    oldIdEmpleadoOfReporteNominaListReporteNomina = em.merge(oldIdEmpleadoOfReporteNominaListReporteNomina);
                 }
             }
             em.getTransaction().commit();
@@ -102,6 +121,8 @@ public class EmpleadoJpaController implements Serializable {
             List<Cnomina> cnominaListNew = empleado.getCnominaList();
             List<ValoresPagar> valoresPagarListOld = persistentEmpleado.getValoresPagarList();
             List<ValoresPagar> valoresPagarListNew = empleado.getValoresPagarList();
+            List<ReporteNomina> reporteNominaListOld = persistentEmpleado.getReporteNominaList();
+            List<ReporteNomina> reporteNominaListNew = empleado.getReporteNominaList();
             List<String> illegalOrphanMessages = null;
             for (Cnomina cnominaListOldCnomina : cnominaListOld) {
                 if (!cnominaListNew.contains(cnominaListOldCnomina)) {
@@ -117,6 +138,14 @@ public class EmpleadoJpaController implements Serializable {
                         illegalOrphanMessages = new ArrayList<String>();
                     }
                     illegalOrphanMessages.add("You must retain ValoresPagar " + valoresPagarListOldValoresPagar + " since its idEmpleado field is not nullable.");
+                }
+            }
+            for (ReporteNomina reporteNominaListOldReporteNomina : reporteNominaListOld) {
+                if (!reporteNominaListNew.contains(reporteNominaListOldReporteNomina)) {
+                    if (illegalOrphanMessages == null) {
+                        illegalOrphanMessages = new ArrayList<String>();
+                    }
+                    illegalOrphanMessages.add("You must retain ReporteNomina " + reporteNominaListOldReporteNomina + " since its idEmpleado field is not nullable.");
                 }
             }
             if (illegalOrphanMessages != null) {
@@ -136,6 +165,13 @@ public class EmpleadoJpaController implements Serializable {
             }
             valoresPagarListNew = attachedValoresPagarListNew;
             empleado.setValoresPagarList(valoresPagarListNew);
+            List<ReporteNomina> attachedReporteNominaListNew = new ArrayList<ReporteNomina>();
+            for (ReporteNomina reporteNominaListNewReporteNominaToAttach : reporteNominaListNew) {
+                reporteNominaListNewReporteNominaToAttach = em.getReference(reporteNominaListNewReporteNominaToAttach.getClass(), reporteNominaListNewReporteNominaToAttach.getIdReporte());
+                attachedReporteNominaListNew.add(reporteNominaListNewReporteNominaToAttach);
+            }
+            reporteNominaListNew = attachedReporteNominaListNew;
+            empleado.setReporteNominaList(reporteNominaListNew);
             empleado = em.merge(empleado);
             for (Cnomina cnominaListNewCnomina : cnominaListNew) {
                 if (!cnominaListOld.contains(cnominaListNewCnomina)) {
@@ -156,6 +192,17 @@ public class EmpleadoJpaController implements Serializable {
                     if (oldIdEmpleadoOfValoresPagarListNewValoresPagar != null && !oldIdEmpleadoOfValoresPagarListNewValoresPagar.equals(empleado)) {
                         oldIdEmpleadoOfValoresPagarListNewValoresPagar.getValoresPagarList().remove(valoresPagarListNewValoresPagar);
                         oldIdEmpleadoOfValoresPagarListNewValoresPagar = em.merge(oldIdEmpleadoOfValoresPagarListNewValoresPagar);
+                    }
+                }
+            }
+            for (ReporteNomina reporteNominaListNewReporteNomina : reporteNominaListNew) {
+                if (!reporteNominaListOld.contains(reporteNominaListNewReporteNomina)) {
+                    Empleado oldIdEmpleadoOfReporteNominaListNewReporteNomina = reporteNominaListNewReporteNomina.getIdEmpleado();
+                    reporteNominaListNewReporteNomina.setIdEmpleado(empleado);
+                    reporteNominaListNewReporteNomina = em.merge(reporteNominaListNewReporteNomina);
+                    if (oldIdEmpleadoOfReporteNominaListNewReporteNomina != null && !oldIdEmpleadoOfReporteNominaListNewReporteNomina.equals(empleado)) {
+                        oldIdEmpleadoOfReporteNominaListNewReporteNomina.getReporteNominaList().remove(reporteNominaListNewReporteNomina);
+                        oldIdEmpleadoOfReporteNominaListNewReporteNomina = em.merge(oldIdEmpleadoOfReporteNominaListNewReporteNomina);
                     }
                 }
             }
@@ -202,6 +249,13 @@ public class EmpleadoJpaController implements Serializable {
                     illegalOrphanMessages = new ArrayList<String>();
                 }
                 illegalOrphanMessages.add("This Empleado (" + empleado + ") cannot be destroyed since the ValoresPagar " + valoresPagarListOrphanCheckValoresPagar + " in its valoresPagarList field has a non-nullable idEmpleado field.");
+            }
+            List<ReporteNomina> reporteNominaListOrphanCheck = empleado.getReporteNominaList();
+            for (ReporteNomina reporteNominaListOrphanCheckReporteNomina : reporteNominaListOrphanCheck) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("This Empleado (" + empleado + ") cannot be destroyed since the ReporteNomina " + reporteNominaListOrphanCheckReporteNomina + " in its reporteNominaList field has a non-nullable idEmpleado field.");
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);

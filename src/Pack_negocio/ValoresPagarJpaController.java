@@ -5,6 +5,7 @@
  */
 package Pack_negocio;
 
+import Pack_negocio.exceptions.IllegalOrphanException;
 import Pack_negocio.exceptions.NonexistentEntityException;
 import Pack_negocio.exceptions.PreexistingEntityException;
 import java.io.Serializable;
@@ -14,7 +15,9 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import Pack_persistencia.Dnomina;
 import Pack_persistencia.Empleado;
+import Pack_persistencia.ReporteNomina;
 import Pack_persistencia.ValoresPagar;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -35,6 +38,9 @@ public class ValoresPagarJpaController implements Serializable {
     }
 
     public void create(ValoresPagar valoresPagar) throws PreexistingEntityException, Exception {
+        if (valoresPagar.getReporteNominaList() == null) {
+            valoresPagar.setReporteNominaList(new ArrayList<ReporteNomina>());
+        }
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -49,6 +55,12 @@ public class ValoresPagarJpaController implements Serializable {
                 idEmpleado = em.getReference(idEmpleado.getClass(), idEmpleado.getIdEmpleado());
                 valoresPagar.setIdEmpleado(idEmpleado);
             }
+            List<ReporteNomina> attachedReporteNominaList = new ArrayList<ReporteNomina>();
+            for (ReporteNomina reporteNominaListReporteNominaToAttach : valoresPagar.getReporteNominaList()) {
+                reporteNominaListReporteNominaToAttach = em.getReference(reporteNominaListReporteNominaToAttach.getClass(), reporteNominaListReporteNominaToAttach.getIdReporte());
+                attachedReporteNominaList.add(reporteNominaListReporteNominaToAttach);
+            }
+            valoresPagar.setReporteNominaList(attachedReporteNominaList);
             em.persist(valoresPagar);
             if (idDetalle != null) {
                 idDetalle.getValoresPagarList().add(valoresPagar);
@@ -57,6 +69,15 @@ public class ValoresPagarJpaController implements Serializable {
             if (idEmpleado != null) {
                 idEmpleado.getValoresPagarList().add(valoresPagar);
                 idEmpleado = em.merge(idEmpleado);
+            }
+            for (ReporteNomina reporteNominaListReporteNomina : valoresPagar.getReporteNominaList()) {
+                ValoresPagar oldIdValorOfReporteNominaListReporteNomina = reporteNominaListReporteNomina.getIdValor();
+                reporteNominaListReporteNomina.setIdValor(valoresPagar);
+                reporteNominaListReporteNomina = em.merge(reporteNominaListReporteNomina);
+                if (oldIdValorOfReporteNominaListReporteNomina != null) {
+                    oldIdValorOfReporteNominaListReporteNomina.getReporteNominaList().remove(reporteNominaListReporteNomina);
+                    oldIdValorOfReporteNominaListReporteNomina = em.merge(oldIdValorOfReporteNominaListReporteNomina);
+                }
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
@@ -71,7 +92,7 @@ public class ValoresPagarJpaController implements Serializable {
         }
     }
 
-    public void edit(ValoresPagar valoresPagar) throws NonexistentEntityException, Exception {
+    public void edit(ValoresPagar valoresPagar) throws IllegalOrphanException, NonexistentEntityException, Exception {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -81,6 +102,20 @@ public class ValoresPagarJpaController implements Serializable {
             Dnomina idDetalleNew = valoresPagar.getIdDetalle();
             Empleado idEmpleadoOld = persistentValoresPagar.getIdEmpleado();
             Empleado idEmpleadoNew = valoresPagar.getIdEmpleado();
+            List<ReporteNomina> reporteNominaListOld = persistentValoresPagar.getReporteNominaList();
+            List<ReporteNomina> reporteNominaListNew = valoresPagar.getReporteNominaList();
+            List<String> illegalOrphanMessages = null;
+            for (ReporteNomina reporteNominaListOldReporteNomina : reporteNominaListOld) {
+                if (!reporteNominaListNew.contains(reporteNominaListOldReporteNomina)) {
+                    if (illegalOrphanMessages == null) {
+                        illegalOrphanMessages = new ArrayList<String>();
+                    }
+                    illegalOrphanMessages.add("You must retain ReporteNomina " + reporteNominaListOldReporteNomina + " since its idValor field is not nullable.");
+                }
+            }
+            if (illegalOrphanMessages != null) {
+                throw new IllegalOrphanException(illegalOrphanMessages);
+            }
             if (idDetalleNew != null) {
                 idDetalleNew = em.getReference(idDetalleNew.getClass(), idDetalleNew.getIdDetalle());
                 valoresPagar.setIdDetalle(idDetalleNew);
@@ -89,6 +124,13 @@ public class ValoresPagarJpaController implements Serializable {
                 idEmpleadoNew = em.getReference(idEmpleadoNew.getClass(), idEmpleadoNew.getIdEmpleado());
                 valoresPagar.setIdEmpleado(idEmpleadoNew);
             }
+            List<ReporteNomina> attachedReporteNominaListNew = new ArrayList<ReporteNomina>();
+            for (ReporteNomina reporteNominaListNewReporteNominaToAttach : reporteNominaListNew) {
+                reporteNominaListNewReporteNominaToAttach = em.getReference(reporteNominaListNewReporteNominaToAttach.getClass(), reporteNominaListNewReporteNominaToAttach.getIdReporte());
+                attachedReporteNominaListNew.add(reporteNominaListNewReporteNominaToAttach);
+            }
+            reporteNominaListNew = attachedReporteNominaListNew;
+            valoresPagar.setReporteNominaList(reporteNominaListNew);
             valoresPagar = em.merge(valoresPagar);
             if (idDetalleOld != null && !idDetalleOld.equals(idDetalleNew)) {
                 idDetalleOld.getValoresPagarList().remove(valoresPagar);
@@ -105,6 +147,17 @@ public class ValoresPagarJpaController implements Serializable {
             if (idEmpleadoNew != null && !idEmpleadoNew.equals(idEmpleadoOld)) {
                 idEmpleadoNew.getValoresPagarList().add(valoresPagar);
                 idEmpleadoNew = em.merge(idEmpleadoNew);
+            }
+            for (ReporteNomina reporteNominaListNewReporteNomina : reporteNominaListNew) {
+                if (!reporteNominaListOld.contains(reporteNominaListNewReporteNomina)) {
+                    ValoresPagar oldIdValorOfReporteNominaListNewReporteNomina = reporteNominaListNewReporteNomina.getIdValor();
+                    reporteNominaListNewReporteNomina.setIdValor(valoresPagar);
+                    reporteNominaListNewReporteNomina = em.merge(reporteNominaListNewReporteNomina);
+                    if (oldIdValorOfReporteNominaListNewReporteNomina != null && !oldIdValorOfReporteNominaListNewReporteNomina.equals(valoresPagar)) {
+                        oldIdValorOfReporteNominaListNewReporteNomina.getReporteNominaList().remove(reporteNominaListNewReporteNomina);
+                        oldIdValorOfReporteNominaListNewReporteNomina = em.merge(oldIdValorOfReporteNominaListNewReporteNomina);
+                    }
+                }
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
@@ -123,7 +176,7 @@ public class ValoresPagarJpaController implements Serializable {
         }
     }
 
-    public void destroy(Long id) throws NonexistentEntityException {
+    public void destroy(Long id) throws IllegalOrphanException, NonexistentEntityException {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -134,6 +187,17 @@ public class ValoresPagarJpaController implements Serializable {
                 valoresPagar.getIdValor();
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The valoresPagar with id " + id + " no longer exists.", enfe);
+            }
+            List<String> illegalOrphanMessages = null;
+            List<ReporteNomina> reporteNominaListOrphanCheck = valoresPagar.getReporteNominaList();
+            for (ReporteNomina reporteNominaListOrphanCheckReporteNomina : reporteNominaListOrphanCheck) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("This ValoresPagar (" + valoresPagar + ") cannot be destroyed since the ReporteNomina " + reporteNominaListOrphanCheckReporteNomina + " in its reporteNominaList field has a non-nullable idValor field.");
+            }
+            if (illegalOrphanMessages != null) {
+                throw new IllegalOrphanException(illegalOrphanMessages);
             }
             Dnomina idDetalle = valoresPagar.getIdDetalle();
             if (idDetalle != null) {

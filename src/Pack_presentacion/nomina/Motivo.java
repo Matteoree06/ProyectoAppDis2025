@@ -45,6 +45,8 @@ public class Motivo extends javax.swing.JFrame {
             model.addRow(new Object[]{motivo.getCodigo(), motivo.getNombre(), motivo.getTipo()});
         }
     }
+    
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -207,7 +209,7 @@ public class Motivo extends javax.swing.JFrame {
             MotivoIngresoEgreso nuevoMotivo = new MotivoIngresoEgreso();
             nuevoMotivo.setNombre(nombre);
             nuevoMotivo.setTipo(tipo);
-            nuevoMotivo.setCodigo(null); // <-- importante: dejarlo como null
+            nuevoMotivo.setCodigo(null); 
 
             // Insertar en BD
             MotivoIngresoEgresoJpaController.create(nuevoMotivo);

@@ -8,6 +8,7 @@
     <class>Pack_persistencia.MotivoIngresoEgreso</class>
     <class>Pack_persistencia.Empleado</class>
     <class>Pack_persistencia.ValoresPagar</class>
+    <class>Pack_persistencia.ReporteNomina</class>
     <properties>
       <property name="javax.persistence.jdbc.url" value="jdbc:oracle:thin:@localhost:1521:XE"/>
       <property name="javax.persistence.jdbc.user" value="db_mateo"/>

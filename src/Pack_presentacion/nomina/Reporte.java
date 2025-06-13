@@ -5,17 +5,68 @@
  */
 package Pack_presentacion.nomina;
 
+import Pack_negocio.DnominaJpaController;
+import Pack_negocio.EmpleadoJpaController;
+import Pack_negocio.ReporteNominaJpaController;
+import Pack_negocio.ValoresPagarJpaController;
+import Pack_persistencia.Dnomina;
+import Pack_persistencia.Empleado;
+import Pack_persistencia.MotivoIngresoEgreso;
+import Pack_persistencia.ReporteNomina;
+import Pack_persistencia.ValoresPagar;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import javax.swing.WindowConstants;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author HP
  */
 public class Reporte extends javax.swing.JFrame {
 
+    private ReporteNominaJpaController ReporteNominaJpaController;
+    private DnominaJpaController DnominaJpaController;
+    private EmpleadoJpaController EmpleadoJpaController;
+    private ValoresPagarJpaController ValoresPagarJpaController;
+    private EntityManagerFactory emf;
+
     /**
      * Creates new form Reporte
      */
     public Reporte() {
         initComponents();
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        emf = Persistence.createEntityManagerFactory("ProyectoAppDistiPU");
+        DnominaJpaController = new DnominaJpaController(emf);
+        EmpleadoJpaController = new EmpleadoJpaController(emf);
+        ValoresPagarJpaController = new ValoresPagarJpaController(emf);
+        ReporteNominaJpaController = new ReporteNominaJpaController(emf);
+        loadReporte();
+    }
+
+    public void loadReporte() {
+        ReporteNominaJpaController reporteController = new ReporteNominaJpaController(emf);
+        List<ReporteNomina> reportes = reporteController.findReporteNominaEntities();
+
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        model.setRowCount(0); // limpiar tabla
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+        for (ReporteNomina r : reportes) {
+            model.addRow(new Object[]{
+                r.getIdEmpleado().getNombre(),
+                r.getIdMotivo().getNombre(),
+                r.getValorPagar(),
+                sdf.format(r.getFechaEntrada())
+            });
+        }
     }
 
     /**
@@ -35,6 +86,7 @@ public class Reporte extends javax.swing.JFrame {
         Buscar_BTN = new javax.swing.JButton();
         Modificar_BTN = new javax.swing.JButton();
         Eliminar_BTN = new javax.swing.JButton();
+        Imprimir_BTN = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -64,22 +116,50 @@ public class Reporte extends javax.swing.JFrame {
 
         Agregar_BTN.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         Agregar_BTN.setText("Agregar");
+        Agregar_BTN.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Agregar_BTNActionPerformed(evt);
+            }
+        });
 
         Buscar_BTN.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         Buscar_BTN.setText("Buscar");
+        Buscar_BTN.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Buscar_BTNActionPerformed(evt);
+            }
+        });
 
         Modificar_BTN.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         Modificar_BTN.setText("Modificar");
+        Modificar_BTN.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Modificar_BTNActionPerformed(evt);
+            }
+        });
 
         Eliminar_BTN.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         Eliminar_BTN.setText("Eliminar");
+        Eliminar_BTN.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Eliminar_BTNActionPerformed(evt);
+            }
+        });
+
+        Imprimir_BTN.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        Imprimir_BTN.setText("Imprimir");
+        Imprimir_BTN.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Imprimir_BTNActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(117, Short.MAX_VALUE)
+                .addContainerGap(97, Short.MAX_VALUE)
                 .addComponent(Agregar_BTN)
                 .addGap(79, 79, 79)
                 .addComponent(Buscar_BTN)
@@ -87,7 +167,9 @@ public class Reporte extends javax.swing.JFrame {
                 .addComponent(Modificar_BTN)
                 .addGap(56, 56, 56)
                 .addComponent(Eliminar_BTN)
-                .addGap(146, 146, 146))
+                .addGap(34, 34, 34)
+                .addComponent(Imprimir_BTN)
+                .addGap(33, 33, 33))
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
@@ -115,7 +197,11 @@ public class Reporte extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(34, 34, 34)
                         .addComponent(Agregar_BTN)))
-                .addContainerGap(33, Short.MAX_VALUE))
+                .addContainerGap(65, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(Imprimir_BTN)
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -131,6 +217,313 @@ public class Reporte extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void Imprimir_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Imprimir_BTNActionPerformed
+        // TODO add your handling code here:
+        MessageFormat header = new MessageFormat("Reporte de Nomina");
+        MessageFormat footer = new MessageFormat("Página {0}");
+
+        try {
+            boolean completo = jTable1.print(javax.swing.JTable.PrintMode.FIT_WIDTH, header, footer);
+            if (completo) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Impresión completada correctamente.");
+            } else {
+                javax.swing.JOptionPane.showMessageDialog(this, "Impresión cancelada.");
+            }
+        } catch (java.awt.print.PrinterException e) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Error al imprimir: " + e.getMessage());
+        }
+    }//GEN-LAST:event_Imprimir_BTNActionPerformed
+
+    private void Agregar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Agregar_BTNActionPerformed
+        // TODO add your handling code here:
+        try {
+            // Seleccionar empleado
+            List<Empleado> empleados = EmpleadoJpaController.findEmpleadoEntities();
+            String[] nombres = empleados.stream().map(e -> e.getNombre()).toArray(String[]::new);
+            String nombreSeleccionado = (String) javax.swing.JOptionPane.showInputDialog(this,
+                    "Seleccione un empleado", "Agregar Reporte Nómina",
+                    javax.swing.JOptionPane.PLAIN_MESSAGE, null, nombres, nombres[0]);
+
+            if (nombreSeleccionado == null) {
+                return; // Cancelado
+            }
+            Empleado empleadoSeleccionado = empleados.stream()
+                    .filter(e -> e.getNombre().equals(nombreSeleccionado))
+                    .findFirst().orElse(null);
+
+            if (empleadoSeleccionado == null) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Empleado no encontrado.");
+                return;
+            }
+
+            // Seleccionar motivo
+            List<MotivoIngresoEgreso> motivos = DnominaJpaController.findDnominaEntities().stream()
+                    .map(d -> d.getCodMotivo())
+                    .distinct()
+                    .collect(java.util.stream.Collectors.toList());
+
+            String[] nombresMotivos = motivos.stream().map(m -> m.getNombre()).toArray(String[]::new);
+            String motivoSeleccionado = (String) javax.swing.JOptionPane.showInputDialog(this,
+                    "Seleccione un motivo", "Agregar Reporte Nómina",
+                    javax.swing.JOptionPane.PLAIN_MESSAGE, null, nombresMotivos, nombresMotivos[0]);
+
+            if (motivoSeleccionado == null) {
+                return;
+            }
+
+            MotivoIngresoEgreso motivo = motivos.stream()
+                    .filter(m -> m.getNombre().equals(motivoSeleccionado))
+                    .findFirst().orElse(null);
+
+            if (motivo == null) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Motivo no encontrado.");
+                return;
+            }
+
+            // Seleccionar valor a pagar
+            List<ValoresPagar> valores = ValoresPagarJpaController.findValoresPagarEntities();
+            String[] descripciones = valores.stream()
+                    .map(v -> "ID " + v.getIdValor() + " - Total: " + v.getTotal())
+                    .toArray(String[]::new);
+
+            String seleccionado = (String) javax.swing.JOptionPane.showInputDialog(this,
+                    "Seleccione un valor a pagar", "Agregar Reporte Nómina",
+                    javax.swing.JOptionPane.PLAIN_MESSAGE, null, descripciones, descripciones[0]);
+
+            if (seleccionado == null) {
+                return;
+            }
+
+            Long idValor = Long.parseLong(seleccionado.split(" ")[1]);
+            ValoresPagar valorSeleccionado = valores.stream()
+                    .filter(v -> v.getIdValor().equals(idValor))
+                    .findFirst().orElse(null);
+
+            if (valorSeleccionado == null) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Valor no encontrado.");
+                return;
+            }
+
+            // Crear ReporteNomina
+            ReporteNomina nuevo = new ReporteNomina();
+            nuevo.setIdEmpleado(empleadoSeleccionado);
+            nuevo.setIdMotivo(motivo);
+            nuevo.setIdValor(valorSeleccionado);
+            nuevo.setValorPagar(valorSeleccionado.getTotal());
+            nuevo.setFechaEntrada(valorSeleccionado.getFechaGeneracion());
+
+            ReporteNominaJpaController.create(nuevo);
+            javax.swing.JOptionPane.showMessageDialog(this, "Reporte agregado exitosamente.");
+
+            // Refrescar tabla
+            loadReporte();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            javax.swing.JOptionPane.showMessageDialog(this, "Error al agregar el reporte: " + e.getMessage());
+        }
+    }//GEN-LAST:event_Agregar_BTNActionPerformed
+
+    private void Buscar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Buscar_BTNActionPerformed
+        // TODO add your handling code here:
+        try {
+            //Seleccionar empleado desde una lista
+            List<Empleado> empleados = EmpleadoJpaController.findEmpleadoEntities();
+            String[] nombres = empleados.stream().map(e -> e.getNombre()).toArray(String[]::new);
+
+            String nombreSeleccionado = (String) javax.swing.JOptionPane.showInputDialog(this,
+                    "Seleccione un empleado", "Buscar Reporte Nómina",
+                    javax.swing.JOptionPane.PLAIN_MESSAGE, null, nombres, nombres[0]);
+
+            if (nombreSeleccionado == null) {
+                return; // Cancelado
+            }
+
+            Empleado empleadoSeleccionado = empleados.stream()
+                    .filter(e -> e.getNombre().equals(nombreSeleccionado))
+                    .findFirst().orElse(null);
+
+            if (empleadoSeleccionado == null) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Empleado no encontrado.");
+                return;
+            }
+
+            // Filtrar reportes por empleado
+            List<ReporteNomina> reportes = ReporteNominaJpaController.findReporteNominaEntities();
+
+            List<ReporteNomina> filtrados = reportes.stream()
+                    .filter(r -> r.getIdEmpleado().equals(empleadoSeleccionado))
+                    .collect(java.util.stream.Collectors.toList());
+
+            if (filtrados.isEmpty()) {
+                javax.swing.JOptionPane.showMessageDialog(this, "No se encontraron reportes para el empleado seleccionado.");
+                return;
+            }
+
+            // Mostrar resultados en la tabla
+            DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+            model.setRowCount(0); // Limpiar tabla
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+            for (ReporteNomina r : filtrados) {
+                model.addRow(new Object[]{
+                    r.getIdEmpleado().getNombre(),
+                    r.getIdMotivo().getNombre(),
+                    r.getValorPagar(),
+                    sdf.format(r.getFechaEntrada())
+                });
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            javax.swing.JOptionPane.showMessageDialog(this, "Error al buscar: " + e.getMessage());
+        }
+    }//GEN-LAST:event_Buscar_BTNActionPerformed
+
+    private void Modificar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Modificar_BTNActionPerformed
+        // TODO add your handling code here:
+        try {
+            int fila = jTable1.getSelectedRow();
+            if (fila == -1) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Seleccione un reporte de la tabla para modificar.");
+                return;
+            }
+
+            // Obtener el empleado y fecha de entrada desde la tabla
+            String nombreEmpleado = jTable1.getValueAt(fila, 0).toString();
+            String fechaEntradaStr = jTable1.getValueAt(fila, 3).toString();
+
+            // Buscar el objeto ReporteNomina correspondiente
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            Date fechaEntrada = sdf.parse(fechaEntradaStr);
+
+            List<ReporteNomina> reportes = ReporteNominaJpaController.findReporteNominaEntities();
+
+            ReporteNomina seleccionado = reportes.stream()
+                    .filter(r -> r.getIdEmpleado().getNombre().equals(nombreEmpleado)
+                    && sdf.format(r.getFechaEntrada()).equals(fechaEntradaStr))
+                    .findFirst().orElse(null);
+
+            if (seleccionado == null) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Reporte no encontrado.");
+                return;
+            }
+
+            // Mostrar motivos disponibles
+            List<Dnomina> dnominas = DnominaJpaController.findDnominaEntities();
+            String[] motivosStr = dnominas.stream()
+                    .map(d -> d.getCodMotivo().getNombre())
+                    .distinct()
+                    .toArray(String[]::new);
+
+            String nuevoMotivoNombre = (String) javax.swing.JOptionPane.showInputDialog(this,
+                    "Seleccione un nuevo motivo", "Modificar Reporte",
+                    javax.swing.JOptionPane.PLAIN_MESSAGE, null, motivosStr, motivosStr[0]);
+
+            if (nuevoMotivoNombre == null) {
+                return;
+            }
+
+            MotivoIngresoEgreso nuevoMotivo = dnominas.stream()
+                    .map(d -> d.getCodMotivo())
+                    .filter(m -> m.getNombre().equals(nuevoMotivoNombre))
+                    .findFirst().orElse(null);
+
+            if (nuevoMotivo == null) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Motivo no encontrado.");
+                return;
+            }
+
+            // Mostrar valores disponibles
+            List<ValoresPagar> valores = ValoresPagarJpaController.findValoresPagarEntities();
+            String[] valoresStr = valores.stream()
+                    .map(v -> "ID " + v.getIdValor() + " - Total: " + v.getTotal())
+                    .toArray(String[]::new);
+
+            String nuevoValorSeleccionado = (String) javax.swing.JOptionPane.showInputDialog(this,
+                    "Seleccione un nuevo valor a pagar", "Modificar Reporte",
+                    javax.swing.JOptionPane.PLAIN_MESSAGE, null, valoresStr, valoresStr[0]);
+
+            if (nuevoValorSeleccionado == null) {
+                return;
+            }
+
+            Long idNuevoValor = Long.parseLong(nuevoValorSeleccionado.split(" ")[1]);
+            ValoresPagar nuevoValor = valores.stream()
+                    .filter(v -> v.getIdValor().equals(idNuevoValor))
+                    .findFirst().orElse(null);
+
+            if (nuevoValor == null) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Valor no encontrado.");
+                return;
+            }
+
+            // Modificar objeto
+            seleccionado.setIdMotivo(nuevoMotivo);
+            seleccionado.setIdValor(nuevoValor);
+            seleccionado.setValorPagar(nuevoValor.getTotal());
+            seleccionado.setFechaEntrada(nuevoValor.getFechaGeneracion());
+
+            // Guardar cambios
+            ReporteNominaJpaController.edit(seleccionado);
+            javax.swing.JOptionPane.showMessageDialog(this, "Reporte modificado correctamente.");
+            loadReporte();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            javax.swing.JOptionPane.showMessageDialog(this, "Error al modificar: " + e.getMessage());
+        }
+    }//GEN-LAST:event_Modificar_BTNActionPerformed
+
+    private void Eliminar_BTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Eliminar_BTNActionPerformed
+        // TODO add your handling code here:
+        try {
+            int fila = jTable1.getSelectedRow();
+            if (fila == -1) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Seleccione un reporte de la tabla para eliminar.");
+                return;
+            }
+
+            // Confirmar eliminación
+            int confirmacion = javax.swing.JOptionPane.showConfirmDialog(this,
+                    "¿Está seguro de que desea eliminar este reporte?",
+                    "Confirmar eliminación", javax.swing.JOptionPane.YES_NO_OPTION);
+
+            if (confirmacion != javax.swing.JOptionPane.YES_OPTION) {
+                return;
+            }
+
+            // Obtener datos de la fila seleccionada
+            String nombreEmpleado = jTable1.getValueAt(fila, 0).toString();
+            String fechaEntradaStr = jTable1.getValueAt(fila, 3).toString();
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            Date fechaEntrada = sdf.parse(fechaEntradaStr);
+
+            List<ReporteNomina> reportes = ReporteNominaJpaController.findReporteNominaEntities();
+
+            ReporteNomina seleccionado = reportes.stream()
+                    .filter(r -> r.getIdEmpleado().getNombre().equals(nombreEmpleado)
+                    && sdf.format(r.getFechaEntrada()).equals(fechaEntradaStr))
+                    .findFirst().orElse(null);
+
+            if (seleccionado == null) {
+                javax.swing.JOptionPane.showMessageDialog(this, "No se encontró el reporte a eliminar.");
+                return;
+            }
+
+            // Eliminar por ID
+            ReporteNominaJpaController.destroy(seleccionado.getIdReporte());
+            javax.swing.JOptionPane.showMessageDialog(this, "Reporte eliminado exitosamente.");
+            loadReporte(); // refrescar tabla
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            javax.swing.JOptionPane.showMessageDialog(this, "Error al eliminar: " + e.getMessage());
+        }
+    }//GEN-LAST:event_Eliminar_BTNActionPerformed
 
     /**
      * @param args the command line arguments
@@ -171,6 +564,7 @@ public class Reporte extends javax.swing.JFrame {
     private javax.swing.JButton Agregar_BTN;
     private javax.swing.JButton Buscar_BTN;
     private javax.swing.JButton Eliminar_BTN;
+    private javax.swing.JButton Imprimir_BTN;
     private javax.swing.JButton Modificar_BTN;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
